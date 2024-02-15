@@ -21,9 +21,9 @@
 ### Restart file  
 
 There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions.   
-58 data variables which N are updates using the predictions  
+58 data variables which 15 are updates using the predictions  
   
-Now and before (n/b) (total of 10 features):
+**Now and before (n/b) (total of 10 features):**
 - ssh   :  sea surface height       => last prediction of zos
 - s     :  sea salinity             => last prediction of so
 - t     :  sea temperature          => last prediction of thetao
@@ -32,7 +32,7 @@ $$V(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}
 - u     :  meridional velocity      => *The planetary ocean* by Michèle Fieux p70
 $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}dz + U_O$$
 
-other (5 features):  
+**other (5 features):**
 - sss_m : sea surface salinity     => last prediction of so
 - sst_m : sea surface temperature  => last prediction of thetao
 - ssu_m : sea surface u velocity   => From new u
