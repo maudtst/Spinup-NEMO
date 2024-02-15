@@ -1,15 +1,15 @@
-# Restart construction for NEMO
+# Restart construction for NEMO  
 
-### Maskdataset
+### Maskdataset  
+  
+dimensions :  t:1 y:331 x:360 z:75  
+umask : continent mask for u grid (continent : 0, sea : 1)  
+vmask : continent mask for v grid (continent : 0, sea : 1)  
 
-dimensions :  t:1 y:331 x:360 z:75
-umask : continent mask for u grid (continent : 0, sea : 1)
-vmask : continent mask for v grid (continent : 0, sea : 1)
-
-### Predictions
-zos    : sea surface height (ssh) - t,y,x
-so     : salinity - t,z,y,x
-thetao : temperature - t,z,y,x
+### Predictions  
+zos    : sea surface height (ssh) - t,y,x  
+so     : salinity - t,z,y,x  
+thetao : temperature - t,z,y,x  
 
 ### Restart
 
