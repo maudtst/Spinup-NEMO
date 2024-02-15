@@ -15,7 +15,7 @@
 - so         : Predicted salinity - t,z,y,x  
 - thetao     : Predicted temperature - t,z,y,x
 - depth      : thickness of the z coordinates
-- rho        : In-situ density (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
+- rho        : In-situ density (kg/m**3) - *Equation of state of Sea-water and related utilities* by Julien Le Sommer
 - rho_insitu : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
 
 ### Restart file  
@@ -28,6 +28,7 @@ Now and before (n/b) :
 - t     :  sea temperature          => last prediction of thetao
 - sss_m :  sea surface salinity     => last prediction of so
 - sst_m :  sea surface temperature  => last prediction of thetao
-- v     :  zonal velocity           => $$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}dz$$
+- v     :  zonal velocity           => *The planetary ocean* by Michèle Fieux p70
+$$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}dz$$
 - u     :
 
