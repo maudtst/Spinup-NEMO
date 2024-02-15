@@ -28,7 +28,7 @@ Now and before (n/b) :
 - t     :  sea temperature          => last prediction of thetao
 - sss_m :  sea surface salinity     => last prediction of so
 - sst_m :  sea surface temperature  => last prediction of thetao
-- v     :  zonal velocity           => g/p\*f
+- v     :  zonal velocity           => $$V(z) = g/(p*f)$$
 - u     :
 
 
