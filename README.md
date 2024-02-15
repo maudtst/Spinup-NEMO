@@ -3,7 +3,7 @@
 ### *Update of restart files for NEMO* 
 
 ### Maskdataset  
-*The Maskdataset contains mask on all grids, vectors and constants*
+**The Maskdataset contains mask on all grids, vectors and constants**
   
 - dimensions : t:1 y:331 x:360 z:75  
 - umask : continent mask for u grid (continent : 0, sea : 1)  
@@ -21,7 +21,7 @@
 - rho_insitu : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
 
 ### Restart file 
-* The restart files contains all physical and dynamical features of the simulation**
+**The restart files contains all physical and dynamical features of the simulation**
   
 There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions.   
 58 data variables which 15 are updates using the predictions  
