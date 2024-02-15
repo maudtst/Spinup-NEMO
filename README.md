@@ -3,7 +3,7 @@
 ### *Update of restart files for NEMO* 
 
 ### Maskdataset  
-- dimensions :  t:1 y:331 x:360 z:75  
+- dimensions : t:1 y:331 x:360 z:75  
 - umask : continent mask for u grid (continent : 0, sea : 1)  
 - vmask : continent mask for v grid (continent : 0, sea : 1)
 - e3t_0
@@ -11,7 +11,7 @@
 - e1t 
 
 ### Features  
-- zos        : Predicted sea surface height (ssh) - t,y,x  
+- zos        \t: Predicted sea surface height (ssh) - t,y,x  
 - so         : Predicted salinity - t,z,y,x  
 - thetao     : Predicted temperature - t,z,y,x
 - depth      : thickness of the z coordinates
