@@ -10,28 +10,25 @@
 - e2t
 - e1t 
 
-### Predictions  
-- zos    : sea surface height (ssh) - t,y,x  
-- so     : salinity - t,z,y,x  
-- thetao : temperature - t,z,y,x
-- depth  : Not predicted - thickness of the z coordinates
+### Features  
+- zos        : Predicted sea surface height (ssh) - t,y,x  
+- so         : Predicted salinity - t,z,y,x  
+- thetao     : Predicted temperature - t,z,y,x
+- depth      : thickness of the z coordinates
+- rho        :
+- rho_insitu : density
 
 ### Restart file  
 
 There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions.   
 58 data variables which N are updates using the predictions
-ssh, u, b, t, s : now and before 
-sss_m, sst_m
+Now and before (n/b) :
+- ssh   :  sea surface height       => last prediction of zos
+- s     :  sea salinity             => last prediction of so
+- t     :  sea temperature          => last prediction of thetao
+- sss_m :  sea surface salinity     => last prediction of so
+- sst_m :  sea surface temperature  => last prediction of thetao
+- v     :  zonal velocity           => 
+- u     :
 
-#variables de restart now   
-sshn : zos at last step  
-Restart['sn']    = xarray_so[-1:,:,y_slice,x_slice]  
-Restart['tn']    = xarray_thetao[-1:,:,y_slice,x_slice]  
-Restart['sss_m'] = xarray_so[-1:,0,y_slice,x_slice]  
-Restart['sst_m'] = xarray_thetao[-1:,0,y_slice,x_slice]  
-
-
-
-## 3 
-rho insitu
 
