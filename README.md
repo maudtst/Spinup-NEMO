@@ -11,11 +11,11 @@
 - e1t 
 
 ### Features  
-- zos        \t: Predicted sea surface height (ssh) - t,y,x  
+- zos        : Predicted sea surface height (ssh) - t,y,x  
 - so         : Predicted salinity - t,z,y,x  
 - thetao     : Predicted temperature - t,z,y,x
 - depth      : thickness of the z coordinates
-- rho        :
+- rho
 - rho_insitu : density
 
 ### Restart file  
