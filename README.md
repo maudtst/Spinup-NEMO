@@ -6,17 +6,17 @@
 - dimensions : t:1 y:331 x:360 z:75  
 - umask : continent mask for u grid (continent : 0, sea : 1)  
 - vmask : continent mask for v grid (continent : 0, sea : 1)
-- e3t_0
-- e2t
-- e1t 
+- e3t_0 :
+- e2t   : 
+- e1t   :
 
 ### Features  
 - zos        : Predicted sea surface height (ssh) - t,y,x  
 - so         : Predicted salinity - t,z,y,x  
 - thetao     : Predicted temperature - t,z,y,x
 - depth      : thickness of the z coordinates
-- rho
-- rho_insitu : density
+- rho        : In-situ density (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
+- rho_insitu : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
 
 ### Restart file  
 
@@ -28,7 +28,7 @@ Now and before (n/b) :
 - t     :  sea temperature          => last prediction of thetao
 - sss_m :  sea surface salinity     => last prediction of so
 - sst_m :  sea surface temperature  => last prediction of thetao
-- v     :  zonal velocity           => 
+- v     :  zonal velocity           => g/p\*f
 - u     :
 
 
