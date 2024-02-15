@@ -51,7 +51,8 @@ Pour now et before on met les même états : Le restart n'a besoin que d'une ima
 
 annexe :
 
-![img1](images/grid0.png)
+![img1](img/grid0.png)
+![img1](img/grid1.png)
 
 Grid T : variables scalaires
 U
