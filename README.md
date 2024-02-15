@@ -29,6 +29,6 @@ Now and before (n/b) :
 - sss_m :  sea surface salinity     => last prediction of so
 - sst_m :  sea surface temperature  => last prediction of thetao
 - v     :  zonal velocity           => *The planetary ocean* by Michèle Fieux p70
-$$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}dz + V_O$$
+$$V=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}dz + V_O$$
 - u     :  meridional velocity      => *The planetary ocean* by Michèle Fieux p70
-$$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}dz + U_O$$
+$$U=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}dz + U_O$$
