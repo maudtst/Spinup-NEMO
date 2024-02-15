@@ -3,6 +3,8 @@
 ### *Update of restart files for NEMO* 
 
 ### Maskdataset  
+*The Maskdataset contains mask on all grids, vectors and constants*
+  
 - dimensions : t:1 y:331 x:360 z:75  
 - umask : continent mask for u grid (continent : 0, sea : 1)  
 - vmask : continent mask for v grid (continent : 0, sea : 1)
@@ -18,8 +20,9 @@
 - rho        : In-situ density (kg/m**3) - *Equation of state of Sea-water and related utilities* by Julien Le Sommer
 - rho_insitu : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
 
-### Restart file  
-
+### Restart file 
+* The restart files contains all physical and dynamical features of the simulation**
+  
 There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions.   
 58 data variables which 15 are updates using the predictions  
   
@@ -32,7 +35,7 @@ $$V(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}
 - u     :  meridional velocity      => *The planetary ocean* by Michèle Fieux p70
 $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}dz + U_O$$
 
-**other (5 features):**
+**5 other features to update:**
 - sss_m : sea surface salinity     => last prediction of so
 - sst_m : sea surface temperature  => last prediction of thetao
 - ssu_m : sea surface u velocity   => From new u
