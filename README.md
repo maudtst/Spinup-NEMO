@@ -51,7 +51,7 @@ Pour now et before on met les même états : Le restart n'a besoin que d'une ima
 
 annexe :
 
-Mettre screenshot 
+![img1](images/grid0.png)
 
 Grid T : variables scalaires
 U
