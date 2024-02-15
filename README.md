@@ -11,18 +11,18 @@ zos    : sea surface height (ssh) - t,y,x
 so     : salinity - t,z,y,x  
 thetao : temperature - t,z,y,x  
 
-### Restart
+### Restart  
 
-340 file per year sliced per range of x and y
-Restart.DOMAIN_position_first  #zone geographique du fichier de restart
-Restart.DOMAIN_position_last
+340 file per year sliced per range of x and y  
+Restart.DOMAIN_position_first  #zone geographique du fichier de restart  
+Restart.DOMAIN_position_last  
 
-#variables de restart now 
-sshn : zos at last step
-Restart['sn']    = xarray_so[-1:,:,y_slice,x_slice]
-Restart['tn']    = xarray_thetao[-1:,:,y_slice,x_slice]
-Restart['sss_m'] = xarray_so[-1:,0,y_slice,x_slice]
-Restart['sst_m'] = xarray_thetao[-1:,0,y_slice,x_slice]
+#variables de restart now   
+sshn : zos at last step  
+Restart['sn']    = xarray_so[-1:,:,y_slice,x_slice]  
+Restart['tn']    = xarray_thetao[-1:,:,y_slice,x_slice]  
+Restart['sss_m'] = xarray_so[-1:,0,y_slice,x_slice]  
+Restart['sst_m'] = xarray_thetao[-1:,0,y_slice,x_slice]  
 
 
 
