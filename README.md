@@ -28,6 +28,6 @@ Now and before (n/b) :
 - t     :  sea temperature          => last prediction of thetao
 - sss_m :  sea surface salinity     => last prediction of so
 - sst_m :  sea surface temperature  => last prediction of thetao
-- v     :  zonal velocity           => $$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x} \, dz$$
+- v     :  zonal velocity           => $$\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial x}dz$$
 - u     :
 
