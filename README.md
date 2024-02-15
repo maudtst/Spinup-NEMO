@@ -46,7 +46,7 @@ Pour now et before on met les même états : Le restart n'a besoin que d'une ima
 - ssu_m : sea surface u velocity   => From new u
 - ssv_m : sea surface v velocity   => From new v
 - rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) sigma_n ou n=0
-- e3t   : depuis e3t_ini et ssh
+- e3t   : depuis  e3t_ini & ssh => bathy => e3t 
 
 
 annexe :
