@@ -43,7 +43,7 @@ $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}
 - sst_m : sea surface temperature  => last prediction of thetao
 - ssu_m : sea surface u velocity   => From new u
 - ssv_m : sea surface v velocity   => From new v
-- rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
+- rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer / can be regularized
 
 
 annexe :
