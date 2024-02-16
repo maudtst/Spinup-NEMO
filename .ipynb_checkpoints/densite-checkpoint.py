@@ -44,6 +44,7 @@ import math as m
 
 
 #---------------- Core Functions ---------------------------------------
+rau0 = 10e3  # We added rau0 constant
 
 def insitu(theta0,S,Z):
     """In-situ density (kg/m**3)
