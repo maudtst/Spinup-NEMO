@@ -28,10 +28,9 @@ The objective is to update the last restart file to initialize the jump. For thi
 ### 4 - Restart file update
 **The restart files contains all physical and dynamical features of the simulation**
   
-There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions.   
-58 data variables which 15 are updates using the predictions  
+There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions. Each files contains 58 data variables which 15 are updates using the predictions  
   
-***Now and before (n/b) (total of 10 features): our now et before on met les même états : Le restart n'a besoin que d'une image - flou euler forward (t->t+1) diff simu en cours plusieurs pas de temps***
+difference of now (n) and before (b): les même états : Le restart n'a besoin que d'une image - flou euler forward (t->t+1) diff simu en cours plusieurs pas de temps***
 
 - ssh(n/b) :  sea surface height       => last prediction of zos
 - s(n/b)   :  sea salinity             => last prediction of so
@@ -44,15 +43,7 @@ $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}
 - sst_m : sea surface temperature  => last prediction of thetao
 - ssu_m : sea surface u velocity   => From new u
 - ssv_m : sea surface v velocity   => From new v
-- rhop  : sigma_n function for Potential density referenced to pressure n*1000dB (kg/m**3) for n =0  - Equation of state of Sea-water and related utilities by Julien Le Sommer
-
-
-#- e3t   : depuis  e3t_ini & ssh => bathy => e3t 
-
-#- deptht    : 
-#- deptht     : depuis e3t
-#- rho_insitu : In-situ density (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
-- sigma_n    :
+- rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer
 
 
 annexe :
