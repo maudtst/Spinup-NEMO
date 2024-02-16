@@ -2,7 +2,7 @@
 # Restart.ipynb
 ### *Update of restart files for NEMO* 
 
-The objective is to update the last restart file to initialize the jump. For this we need the 340 restarts files of the last simulated year. We also need the predictions of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). And the Mask dataset of the corresponding simulation where several informations are needed.
+The objective is to update the last restart file to initialize the jump. For this we need the 340 restarts files of the last simulated year. We also need the predictions of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). We also need the Mask dataset of the corresponding simulation where several informations are needed.
 
 ### Maskdataset  
 **The Maskdataset contains mask on all grids, vectors and constants**
