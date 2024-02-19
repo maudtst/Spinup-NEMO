@@ -1,6 +1,3 @@
-# main
-Prepare, forecats and predict
-
 # Jumper.ipynb
 
 ### *Prepare and forecast simulations* 
@@ -56,8 +53,7 @@ $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}
 - ssv_m : sea surface v velocity   => From new v
 - rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer / can be regularized
 
-
-annexe :
+Grid infos :
 
 ![img1](img/grid0.png)
 ![img1](img/grid1.png)
@@ -67,3 +63,19 @@ U
 V
 W
 F
+
+
+# main
+
+### *Prepare and forecast simulations and initialize restarts files with one command line* 
+Prepare, forecats and predict
+NB : En amont code de Guillaume pour obtenir des moyennes annuelles 
+
+#python main.py --ye True --start 25 --end 65 --comp 0.9 --steps 30 --path /scratchu/mtissot/SIMUp6Y
+
+- ye    : la simulation est en années
+- start : année de départ pour la selection des données d'entrainement
+- end   : année de fin (generalement la dernière année simulée)
+- comp  : Nombre/ratio de composantes à accelerer
+- steps : taille du saut (en année si ye = True sinon en mois)
+- path  : adresse du fichier de simulations
