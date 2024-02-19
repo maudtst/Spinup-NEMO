@@ -9,7 +9,9 @@ We apply PCA on each simulation to transform those features to time series. And 
 
 ![img2](img/jumper2.png)
 
-![img3](img/jumper3.png)
+We forecast each component with a Gaussian process
+
+And we evaluate the RMSE 
 
 ![img4](img/jumper4.png)
 
