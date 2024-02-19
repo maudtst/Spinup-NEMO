@@ -60,6 +60,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     emulate(simu_path=args.path,steps=args.steps,ye=args.ye,start=args.start,end=args.end,comp=args.comp)
-    
+
+    #update_restart_files
     
     #python SpinUp/jumper/main.py --ye True --start 25 --end 65 --comp 0.9 --steps 30 --path /scratchu/mtissot/SIMUp6Y
