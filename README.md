@@ -11,6 +11,8 @@ We apply PCA on each simulation to transform those features to time series. And 
 
 We forecast each component with a Gaussian process
 
+![img2](img/jumper3.png)
+
 And we evaluate the RMSE 
 
 ![img4](img/jumper4.png)
