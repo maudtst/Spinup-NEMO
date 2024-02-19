@@ -7,7 +7,6 @@ The objective is load yearly and standardize simulations to implement a Gaussian
 
 We apply PCA on each simulation to transform those features to time series. And we observe the trend in the first component.
 
-![img2](img/jumper2.png)
 
 We forecast each component with a Gaussian process
 
@@ -15,7 +14,7 @@ We forecast each component with a Gaussian process
 
 And we evaluate the RMSE 
 
-![img4](img/jumper4.png)
+![img2](img/jumper2.png)
 
 # Restart.ipynb
 
