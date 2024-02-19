@@ -100,7 +100,7 @@ class Simulation:
     #  prepare simulation   #
     #########################
     
-    def prepare(self):
+    def prepare(self,stand=True):
         if self.end is not None:
             self.simulation = self.simulation[self.start:self.end]
         else:
@@ -109,7 +109,8 @@ class Simulation:
         #self.removeClosedSeas()
         self.desc.update({"mean":np.nanmean(self.simulation),"std":np.nanstd(self.simulation),
                           "min":np.nanmin(self.simulation),"max":np.nanmax(self.simulation)})
-        self.standardize() 
+        if stand:
+            self.standardize() 
         self.simulation = self.simulation.values
         
     def getSSCA(self,array):
@@ -281,7 +282,7 @@ class Predictions:
         return mean,std,y_train,y_test,x_train,x_pred
 
     def show(self,n,y_hat,y_hat_std,train_len,color="tab:blue"):
-        figure = plt.figure(figsize=(10,4))
+        figure = plt.figure(figsize=(7,3))
         plt.plot(self.data[self.var+"-"+str(n)][:train_len], linestyle="dashed", color="black", alpha=0.7, label = "Train serie")
         if(train_len < len(self)):
              plt.plot(self.data[self.var+"-"+str(n)][train_len-1:], linestyle="dashed", color="black", alpha =0.5,label = "Test serie")
