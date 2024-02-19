@@ -3,10 +3,9 @@
 ### *Prepare and forecast simulations* 
 The objective is load yearly and standardize simulations to implement a Gaussian process forecast. For this we need simulations files of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). 
 
-![img1](img/jumper1.png)
-
 We apply PCA on each simulation to transform those features to time series. And we observe the trend in the first component.
 
+![img1](img/jumper1.png)
 
 We forecast each component with a Gaussian process
 
