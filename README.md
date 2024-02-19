@@ -1,8 +1,29 @@
+# Jumper.ipynb
+
+### *Prepare and forecast simulations* 
+The objective is load yearly and standardize simulations to implement a Gaussian process forecast. For this we need simulations files of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). 
+
+![img1](img/jumper1.png)
+
+We apply PCA on each simulation to transform those features to time series. And we observe the trend in the first component.
+
+![img2](img/jumper2.png)
+
+We forecast each component with a Gaussian process
+
+![img2](img/jumper3.png)
+
+And we evaluate the RMSE 
+
+![img4](img/jumper4.png)
 
 # Restart.ipynb
+
 ### *Update of restart files for NEMO* 
 
 The objective is to update the last restart file to initialize the jump. For this we need the 340 restarts files of the last simulated year. We also need the predictions of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). We also need the Mask dataset of the corresponding simulation where several informations are needed.
+
+![img5](img/img3.png)
 
 ### 1 - Predicted features  
 - zos        : Predicted sea surface height (ssh) - grid T - t,y,x  
@@ -45,14 +66,29 @@ $$U(z)=\frac{g}{p \cdot f} \cdot \int_{z_0}^{Z} \frac{\partial \rho}{\partial y}
 - ssv_m : sea surface v velocity   => From new v
 - rhop  : Potential density referenced to pressure n*1000dB (kg/m**3) - Equation of state of Sea-water and related utilities by Julien Le Sommer / can be regularized
 
+Grid infos :
 
-annexe :
-
-![img1](img/grid0.png)
-![img1](img/grid1.png)
+![img6](img/grid0.png)
+![img7](img/grid1.png)
 
 Grid T : variables scalaires
 U
 V
 W
 F
+
+
+# main
+
+### *Prepare and forecast simulations and initialize restarts files with one command line* 
+Prepare, forecats and predict
+NB : En amont code de Guillaume pour obtenir des moyennes annuelles 
+
+#python main.py --ye True --start 25 --end 65 --comp 0.9 --steps 30 --path /scratchu/mtissot/SIMUp6Y
+
+- ye    : la simulation est en années
+- start : année de départ pour la selection des données d'entrainement
+- end   : année de fin (generalement la dernière année simulée)
+- comp  : Nombre/ratio de composantes à accelerer
+- steps : taille du saut (en année si ye = True sinon en mois)
+- path  : adresse du fichier de simulations
