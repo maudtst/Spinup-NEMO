@@ -4,6 +4,17 @@ import densite
 import matplotlib.pyplot as plt
 
 def getXYslice(array):
+    """
+    Given a Restart array with 'DOMAIN_position_first' and 'DOMAIN_position_last' attributes,
+    this function calculates and returns slices for the x and y dimensions.
+
+    Parameters:
+        array (xarray.DataArray) : Restart file
+        
+    Returns
+        x_string (slice dtype=float) : range of x positions
+        y_string (slice dtype=float) : range of y positions
+    """
     First   = array.DOMAIN_position_first  
     Last    = array.DOMAIN_position_last
     x_slice = slice(First[0]-1,Last[0])
@@ -11,6 +22,20 @@ def getXYslice(array):
     return x_slice, y_slice
 
 def toXarray(var,name,dep=True,fillna=True):
+    """
+    Converts a numpy array into an xarray DataArray.
+
+    Parameters:
+        var (numpy array)       : The  array to be converted.
+        name (str)              : The name to be assigned to the resulting xarray DataArray.
+        dep (bool, optional)    : If True, indicates that the array represents dependent variables.
+                                   Defaults to True.
+        fillna (bool, optional) : If True, fills NaN values with 0 after conversion.
+                                   Defaults to True.
+
+    Returns:
+        array (xarray.DataArray): An xarray DataArray object representing the input numpy array.
+    """
     if dep:
         if len(np.shape(var))==4:
             array = xr.DataArray(var, dims=("time_counter", "nav_lev", "y", "x"), name=name)
@@ -24,6 +49,19 @@ def toXarray(var,name,dep=True,fillna=True):
     return array.fillna(0)
 
 def update_pred(array,zos,so,thetao):
+    """
+    Update the Restart file with the predictions. We use the same prediction step for now and before steps (e.g sshn/sshb). 
+    We also update the surface so (sss_m) and thetao (sst_m) 
+
+    Parameters:
+        array (xarray.Dataset) : Restart file
+        zos (numpy.ndarray)    : Sea surface height for the current time step.
+        so (numpy.ndarray)     : Salinity for the current time step.
+        thetao (numpy.ndarray) : Potential temperature for the current time step.
+
+    Returns:
+        None
+    """
     x_slice,y_slice = getXYslice(array)
     #Changement des variables de restart now 
     array['sshn'] = toXarray(zos[-1:,y_slice,x_slice],"sshn",dep=False)
