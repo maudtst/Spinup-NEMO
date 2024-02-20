@@ -8,9 +8,9 @@ We apply PCA on each simulation to transform those features to time series. And 
 ![img1](img/jumper1.png)
 
 We forecast each component with a Gaussian process with the following kernel.
-- Long term trend :  0.1*DotProduct(sigma_0=0.0) 
-- Periodic patterns  = 10 * ExpSineSquared(length_scale=5/45, periodicity=5/45)#0.5**2*RationalQuadratic(length_scale=5.0, alpha=1.0) + 10 * ExpSineSquared(length_scale=5.0)
-- White noise = 2*WhiteKernel(noise_level=1)
+- Long term trend   :  0.1*DotProduct(sigma_0=0.0) 
+- Periodic patterns : 10 * ExpSineSquared(length_scale=5/45, periodicity=5/45)#0.5**2*RationalQuadratic(length_scale=5.0, alpha=1.0) + 10 * ExpSineSquared(length_scale=5.0)
+- White noise       : 2*WhiteKernel(noise_level=1)
 
      
 
