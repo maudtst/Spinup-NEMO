@@ -1,8 +1,13 @@
-Emulator for NEMO
+# Emulator for NEMO
+
+![img1](img/emulator.png)
+Add retstart and prepare 
+
 
 # Jumper.ipynb
 
 ### *Prepare and forecast simulations* 
+
 The objective is to implement a Gaussian process forecast to forecast yearly simulations of NEMO coupled climate model. For this we need simulations files of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). 
 
 We apply PCA on each simulation to transform those features to time series. And we observe the trend in the first component.
