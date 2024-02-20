@@ -1,3 +1,5 @@
+hange cumsum axis = 1
+change update_rho -> thetao_new => Restart["tn"]
 # EMULATOR FRO NEMO MODEL
 
 ![img1](img/emulator.png)
