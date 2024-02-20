@@ -3,19 +3,22 @@
 ### *Prepare and forecast simulations* 
 The objective is load yearly and standardize simulations to implement a Gaussian process forecast. For this we need simulations files of the sea surface height (zos or ssh), the salinity (so) and temperature (thetao). 
 
-![img1](img/jumper1.png)
-
 We apply PCA on each simulation to transform those features to time series. And we observe the trend in the first component.
 
-![img2](img/jumper2.png)
+![img1](img/jumper1.png)
 
-We forecast each component with a Gaussian process
+We forecast each component with a Gaussian process with the following kernel.
+- Long term trend :  0.1*DotProduct(sigma_0=0.0) 
+- Periodic patterns  = 10 * ExpSineSquared(length_scale=5/45, periodicity=5/45)#0.5**2*RationalQuadratic(length_scale=5.0, alpha=1.0) + 10 * ExpSineSquared(length_scale=5.0)
+- White noise = 2*WhiteKernel(noise_level=1)
+
+     
 
 ![img2](img/jumper3.png)
 
 And we evaluate the RMSE 
 
-![img4](img/jumper4.png)
+![img2](img/jumper2.png)
 
 # Restart.ipynb
 
