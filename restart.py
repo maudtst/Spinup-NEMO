@@ -79,6 +79,17 @@ def update_pred(array,zos,so,thetao):
 #E3T_M diff E3T IL Y A BIEN UNE DIMENSION DE PROFONDEUR ?????????.??
 #AJOUTER LE CALCUL DE DEPTHT
 def update_e3tm(mask_array,array):
+    """
+    Update the e3t and e3t_m : ADD MORE EXP
+
+    Parameters:
+        mask_array (xarray.Dataset) : Mask array containing tmask values.-
+        array (xarray.Dataset)      : Restart file
+
+    Returns:
+        e3t (numpy.ndarray) : Updated array of z-axis cell thicknesses.
+        depth (int)         : The depth value, which is currently set to 0.
+    """
     x_slice,y_slice = getXYslice(array)
     e3t_ini  = array.variables['e3t_ini']                                        # initial z axis cell's thickness on grid T 
     ssmask   = np.max(mask_array.tmask.values[:,:,y_slice,x_slice],axis=1)       # continent mask 
@@ -95,6 +106,17 @@ def update_e3tm(mask_array,array):
     return e3t, depth
 
 def update_rhop(array,thetao,so):
+    """
+    Update the rhop variable in the array based on temperature (thetao) and salinity (so).
+
+    Parameters:
+        array (xarray.Dataset) : Restart file
+        thetao (numpy.ndarray) : Temperature predictions
+        so (numpy.ndarray)     : Salinity predictions
+
+    Returns:
+        None
+    """
     x_slice,y_slice = getXYslice(array)
     rhop = densite.sigma_n(thetao[-1:,:,y_slice,x_slice],so[-1:,:,y_slice,x_slice],n=0)
     #rhop = densite.insitu(thetao[-1:,:,y_slice,x_slice],so[-1:,:,y_slice,x_slice],deptht)  
@@ -121,6 +143,15 @@ def plot_density_infos(array,e3t_new,min_=1017):
 
 # FONCTIONNE MAIS A VOIR
 def regularize_rho(rho):
+    """
+    Regularize the rho variable to ensure the density is alway superieur at lower depth
+
+    Parameters:
+        rho (numpy.ndarray): Array representing density with dimensions (time, depth, latitude, longitude).
+
+    Returns:
+        numpy.ndarray : Regularized array of density.
+    """
     t,z,y,x = np.shape(rho)
     for i in range(x):
         for j in range(y):
