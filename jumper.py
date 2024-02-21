@@ -20,6 +20,18 @@ warnings.filterwarnings("ignore")
 #file    #Select the file where the prepared simu was saved  
 #var     #Select the var you want to forecast
 def load_ts(file,var):
+    """
+    Load time series data from the file where a save the prepared simulations.
+
+    Parameters:
+        file (str): The path to the file containing the time series data.
+        var (str) : The variable to be loaded.
+
+    Returns:
+        tuple: A tuple containing:
+            - df (DataFrame): DataFrame containing the time series data.
+            - dico (dict): A dictionary containing all informations on the simu (pca, mean, std, time_dim)...
+    """
     dico = np.load(file+f"/{var}.npz",allow_pickle=True)
     dico = {key: dico[key] for key in dico.keys()}
     df   = pd.DataFrame(dico["ts"],columns=[f"{var}-{i+1}" for i in range(np.shape(dico["ts"])[1])])
@@ -27,16 +39,50 @@ def load_ts(file,var):
         dico["pca"] = pickle.load(file)
     return df,dico
 
+##################################
+##                              ##
+##   LOAD AND PREPARE A SIMU    ##
+##                              ##
+##################################
 
 class Simulation:
+
+    """!!!Modified version where we apply a script to get yearly average for the simu before!!!"""
     
-    ##################################
-    ##                              ##
-    ##   LOAD AND PREPARE A SIMU    ##
-    ##                              ##
-    ##################################
+    """
+    A class for loading and preparing simulation data.
+
+    Attributes:
+        path (str)                    : The path to the simulation data.
+        term (str)                    : The term for the simulation.
+        files (list)                  : List of files related to the simulation.
+        start (int)                   : The start index for data slicing.
+        end (int)                     : The end index for data slicing.
+        ye (bool)                     : Flag indicating whether to use ye or not.
+        comp (float)                  : The comp value for the simulation.
+        len (int)                     : The length of the simulation.
+        desc (dict)                   : A dictionary containing descriptive statistics of the simulation data.
+        time_dim (str)                : The name of the time dimension.
+        y_size (int)                  : The size of the y dimension.
+        x_size (int)                  : The size of the x dimension.
+        z_size (int or None)          : The size of the z dimension, if available.
+        shape (tuple)                 : The shape of the simulation data.
+        simulation (xarray.DataArray) : The loaded simulation data.
+    """
     
     def __init__(self,path,term,start=0,end=None,comp=0.9,ye=True,ssca=False): #choose jobs 3 if 2D else 1
+        """
+        Initialize Simulation with specified parameters.
+
+        Parameters:
+            path (str)             : The path to the simulation data.
+            term (str)             : The term for the simulation.
+            start (int, optional)  : The start index for data slicing. Defaults to 0.
+            end (int, optional)    : The end index for data slicing. Defaults to None.
+            comp (float, optional) : The comp value for the simulation. Defaults to 0.9.
+            ye (bool, optional)    : Flag indicating whether to use ye or not. Defaults to True.
+            ssca (bool, optional)  : Flag indicating whether ssca is used. Defaults to False.
+        """
         self.path  = path
         self.term  = term
         self.files = Simulation.getData(path,term)
@@ -52,6 +98,19 @@ class Simulation:
     #### Load files and dimensions info ###
     
     def getData(path,term):
+        """
+        Get the files related to the simulation in the right directory
+
+        Parameters:
+            path (str): The path to the simulation data.
+            term (str): The term for the simulation.
+                        zos    -> sea surface height (also ssh) - (t,y,z)
+                        so     -> salinity - (t,z,y,x)
+                        thetao -> temperature - (t,z,y,x)
+
+        Returns:
+            list: List of files related to the simulation.
+        """
         grid = []
         for file in sorted(os.listdir(path)):
             if term+"." in file: #add param!=""
@@ -59,6 +118,9 @@ class Simulation:
         return grid
     
     def getAttributes(self):
+        """
+        Get attributes of the simulation data.
+        """
         array = xr.open_dataset(self.files[-1], decode_times=False,chunks={"time": 200, "x":120})
         self.time_dim  = list(array.dims)[3]
         self.y_size    = array.sizes['y']
@@ -77,6 +139,9 @@ class Simulation:
     #### Load simulation ###
         
     def getSimu(self):
+        """
+        Load simulation data.
+        """
         #array = list(Parallel(jobs)(delayed(self.loadFile)(file) for file in self.files))
         array = [self.loadFile(file) for file in self.files if self.len<self.end]
         array = xr.concat(array, self.time_dim)
@@ -84,6 +149,16 @@ class Simulation:
         self.simulation = array
        
     def loadFile(self,file):
+        """
+        Load simulation data from a file. Stop when the imported simulation date is superior to the attirbute end.
+        This is why we cannot use parallelisation to import simulations.
+
+        Parameters:
+            file (str): The path to the file containing the simulation data.
+
+        Returns:
+            xarray.DataArray: The loaded simulation data.
+        """
         array = xr.open_dataset(file, decode_times=False,chunks={"time": 200, "x":120})
         array = array[self.term]
         #if self.ye:
@@ -101,6 +176,13 @@ class Simulation:
     #########################
     
     def prepare(self,stand=True):
+        """
+        Prepare the simulation data by slicing it based on start and end indices, updating length and descriptive statistics,
+        standardizing if specified.
+
+        Parameters:
+            stand (bool, optional): Flag indicating whether to standardize the simulation data. Defaults to True.
+        """
         if self.end is not None:
             self.simulation = self.simulation[self.start:self.end]
         else:
@@ -114,6 +196,12 @@ class Simulation:
         self.simulation = self.simulation.values
         
     def getSSCA(self,array):
+        """
+        Extract the seasonality data from the simulation. Not used : we import yearly data
+
+        Parameters:
+            array (xarray.Dataset): The dataset containing simulation data.
+        """
         array = array[self.term].values
         n = np.shape(array)[0]//12 *12
         array = array[-n:]
@@ -126,6 +214,9 @@ class Simulation:
         
             
     def removeClosedSeas(self):
+        """
+        Remove closed seas from the simulation data. Not used : we don't have the specific mask to fill with predictions 
+        """
         array   = self.simulation
         y_range = [slice(240, 266),slice(235, 276),slice(160, 201)]  #mer noir, grands lacs, lac victoria 
         x_range = [slice(195, 213),slice(330, 351),slice(310, 325)] 
@@ -135,6 +226,9 @@ class Simulation:
         self.simulation = array
         
     def standardize(self):
+        """
+        Standardize the simulation data.
+        """
         self.simulation = (self.simulation - self.desc["mean"]) / (2*self.desc["std"]) 
         
     ##################
@@ -142,6 +236,9 @@ class Simulation:
     ##################
         
     def applyPCA(self):
+        """
+        Apply Principal Component Analysis (PCA) to the simulation data.
+        """
         array = self.simulation.reshape(self.len,-1)
         self.bool_mask = np.asarray(np.isfinite(array[0,:]), dtype=bool)
         array_masked = array[:,self.bool_mask]
@@ -150,6 +247,15 @@ class Simulation:
         self.pca  = pca
         
     def getPC(self,n):
+        """
+        Get principal component map for the specified component.
+
+        Parameters:
+            n (int): The component number.
+
+        Returns:
+            numpy.ndarray: The principal component map.
+        """
         map_ = np.zeros((np.product(self.shape)), dtype=float)
         map_[~self.bool_mask] = np.nan
         map_[self.bool_mask]  = self.pca.components_[n]
@@ -161,12 +267,33 @@ class Simulation:
     ############################### NOT USED IN THE MAIN.PY ############################### 
     
     def rmseOfPCA(self,n):
+        """
+        Calculate Root Mean Square Error (RMSE) for PCA reconstruction.
+
+        Parameters:
+            n (int): The number of components used for reconstruction.
+
+        Returns:
+            tuple: A tuple containing:
+                - numpy.ndarray: The reconstructed data.
+                - numpy.ndarray: RMSE values.
+                - numpy.ndarray: RMSE map.
+        """
         reconstruction = self.reconstruct(n)
         rmse_values    = self.rmseValues(reconstruction)*2*self.desc["std"]
         rmse_map       = self.rmseMap(reconstruction)   *2*self.desc["std"]
         return reconstruction, rmse_values, rmse_map
     
     def reconstruct(self, n):
+        """
+        Reconstruct data using specified number of principal components.
+
+        Parameters:
+            n (int): The number of components used for reconstruction.
+
+        Returns:
+            numpy.ndarray: The reconstructed data.
+        """
         rec = []
         #int_mask =   # Convert the boolean mask to int mask once
         self.int_mask = self.bool_mask.astype(np.int32).reshape(self.shape)       # Reshape to match the shape of map_
@@ -179,14 +306,38 @@ class Simulation:
         return np.array(rec)
     
     def rmseValues(self,reconstruction):
+        """
+        Calculate RMSE values.
+
+        Parameters:
+            reconstruction (numpy.ndarray): The reconstructed data.
+
+        Returns:
+            numpy.ndarray: RMSE values.
+        """
         n = np.product(self.shape) - self.nbNan()
         return  np.sqrt(np.nansum(np.nansum((self.simulation[:]-reconstruction)**2,axis=-1),axis=-1)/n)
     
     def rmseMap(self,reconstruction):
+        """
+        Calculate RMSE map.
+
+        Parameters:
+            reconstruction (numpy.ndarray): The reconstructed data.
+
+        Returns:
+            numpy.ndarray: RMSE map.
+        """
         t = self.len
         return np.sqrt(np.sum((self.simulation[:]-reconstruction)**2,axis=0)/t)
     
     def nbNan(self):
+        """
+        Count the number of NaN values in the data.
+
+        Returns:
+            int: Number of NaN values.
+        """
         return np.sum(self.int_mask==False)
 
     #######################################################################################################
@@ -196,6 +347,12 @@ class Simulation:
     ##################
     
     def makeDico(self):
+        """
+        Create a dictionary containing simulation data, descriptive statistics, and other relevant information.
+
+        Returns:
+            dict: A dictionary containing simulation data and information.
+        """
         dico = dict()
         dico["ts"]    = self.components.tolist()
         dico["mask"]  = self.bool_mask
@@ -209,6 +366,13 @@ class Simulation:
         return dico
     
     def save(self,file,term):
+        """
+        Save the simulation data and information to files.
+
+        Parameters:
+            file (str): The path to the directory where the files will be saved.
+            term (str): The term used in the filenames.
+        """
         simu_dico = self.makeDico()
         if not os.path.exists(file):  #save infos
             os.makedirs(file)
