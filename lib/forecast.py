@@ -21,7 +21,8 @@ warnings.filterwarnings("ignore")
 #var     #Select the var you want to forecast
 def load_ts(file,var):
     """
-    Load time series data from the file where a save the prepared simulations.
+    Load time series data from the file where are saved the prepared simulations.
+    This function is used the get the prepared data info in order to instanciate a prediction class
 
     Parameters:
         file (str): The path to the file containing the time series data.
@@ -67,7 +68,7 @@ class Simulation:
         x_size (int)                  : The size of the x dimension.
         z_size (int or None)          : The size of the z dimension, if available.
         shape (tuple)                 : The shape of the simulation data.
-        simulation (xarray.DataArray) : The loaded simulation data.
+        simulation (xarray.DataArray) : The loaded simulation data 
     """
     
     def __init__(self,path,term,start=0,end=None,comp=0.9,ye=True,ssca=False): #choose jobs 3 if 2D else 1
@@ -81,7 +82,7 @@ class Simulation:
             end (int, optional)    : The end index for data slicing. Defaults to None.
             comp (float, optional) : The comp value for the simulation. Defaults to 0.9.
             ye (bool, optional)    : Flag indicating whether to use ye or not. Defaults to True.
-            ssca (bool, optional)  : Flag indicating whether ssca is used. Defaults to False.
+            ssca (bool, optional)  : Flag indicating whether ssca is used. Defaults to False.  #Not used in this class 
         """
         self.path  = path
         self.term  = term
@@ -157,7 +158,7 @@ class Simulation:
             file (str): The path to the file containing the simulation data.
 
         Returns:
-            xarray.DataArray: The loaded simulation data.
+            (xarray.DataArray) : The loaded simulation data.
         """
         array = xr.open_dataset(file, decode_times=False,chunks={"time": 200, "x":120})
         array = array[self.term]
@@ -177,7 +178,7 @@ class Simulation:
     
     def prepare(self,stand=True):
         """
-        Prepare the simulation data by slicing it based on start and end indices, updating length and descriptive statistics,
+        Prepare the simulation data selecting indices from start to end, updating length and obtaining statistics,
         standardizing if specified.
 
         Parameters:
@@ -200,7 +201,7 @@ class Simulation:
         Extract the seasonality data from the simulation. Not used : we import yearly data
 
         Parameters:
-            array (xarray.Dataset): The dataset containing simulation data.
+            array (xarray.Dataset): The last dataset containing simulation data in the simulation file. 
         """
         array = array[self.term].values
         n = np.shape(array)[0]//12 *12
@@ -251,10 +252,10 @@ class Simulation:
         Get principal component map for the specified component.
 
         Parameters:
-            n (int): The component number.
+            n (int) : component used for reconstruction.
 
         Returns:
-            numpy.ndarray: The principal component map.
+            (numpy.ndarray): The principal component map.
         """
         map_ = np.zeros((np.product(self.shape)), dtype=float)
         map_[~self.bool_mask] = np.nan
@@ -274,10 +275,10 @@ class Simulation:
             n (int): The number of components used for reconstruction.
 
         Returns:
-            tuple: A tuple containing:
-                - numpy.ndarray: The reconstructed data.
-                - numpy.ndarray: RMSE values.
-                - numpy.ndarray: RMSE map.
+            A tuple containing:
+                - reconstruction (numpy.array) : The reconstructed data.
+                - rmse_values (numpy.array)    : RMSE for each time step.
+                - rmse_map (numpy.array)       : time average RMSE of the PCA 
         """
         reconstruction = self.reconstruct(n)
         rmse_values    = self.rmseValues(reconstruction)*2*self.desc["std"]
@@ -286,13 +287,13 @@ class Simulation:
     
     def reconstruct(self, n):
         """
-        Reconstruct data using specified number of principal components.
+        Reconstruct data using a specified number of principal components.
 
         Parameters:
-            n (int): The number of components used for reconstruction.
+            n (int) : The number of components used for reconstruction.
 
         Returns:
-            numpy.ndarray: The reconstructed data.
+            (numpy.array) : The reconstructed data.
         """
         rec = []
         #int_mask =   # Convert the boolean mask to int mask once
@@ -313,7 +314,7 @@ class Simulation:
             reconstruction (numpy.ndarray): The reconstructed data.
 
         Returns:
-            numpy.ndarray: RMSE values.
+            (numpy.ndarray) : RMSE values.
         """
         n = np.product(self.shape) - self.nbNan()
         return  np.sqrt(np.nansum(np.nansum((self.simulation[:]-reconstruction)**2,axis=-1),axis=-1)/n)
@@ -326,7 +327,7 @@ class Simulation:
             reconstruction (numpy.ndarray): The reconstructed data.
 
         Returns:
-            numpy.ndarray: RMSE map.
+            (numpy.ndarray) : RMSE map.
         """
         t = self.len
         return np.sqrt(np.sum((self.simulation[:]-reconstruction)**2,axis=0)/t)
@@ -336,7 +337,7 @@ class Simulation:
         Count the number of NaN values in the data.
 
         Returns:
-            int: Number of NaN values.
+            (int) : Number of NaN values.
         """
         return np.sum(self.int_mask==False)
 
@@ -351,7 +352,7 @@ class Simulation:
         Create a dictionary containing simulation data, descriptive statistics, and other relevant information.
 
         Returns:
-            dict: A dictionary containing simulation data and information.
+            (dict) : A dictionary containing simulation data and information.
         """
         dico = dict()
         dico["ts"]    = self.components.tolist()
@@ -381,21 +382,42 @@ class Simulation:
         np.savez(f"{file}/{term}/{term}", **simu_dico)
 
 
+#################################
+##                             ##
+##   Forecast & reconstruct    ##
+##                             ##
+#################################
+    
+
 class Predictions:
 
-    #################################
-    ##                             ##
-    ##   Forecast & reconstruct    ##
-    ##                             ##
-    #################################
-    
+    """
+    Class for forecasting and reconstructing time series data using Gaussian Processes.
+
+     Attributes:
+            var (str)                     : The variable name.
+            data (DataFrame)              : The time series data.
+            info (dict)                   : Additional information.
+            gp (GaussianProcessRegressor) : The Gaussian Process regressor.
+            w (int)                       : Width for moving average and metrics calculation.
+    """
     
     def __init__(self,var,data=None,info=None,gp=None,w=12):
+        """
+        Initialize the Predictions object.
+
+        Parameters:
+            var (str)                     : The variable name.
+            data (DataFrame)              : The time series data.
+            info (dict)                   : Additional information.
+            gp (GaussianProcessRegressor) : The Gaussian Process regressor.
+            w (int)                       : Width for moving average and metrics calculation.
+        """
         self.var  = var
         self.gp   = Predictions.defineGP() if gp is None else gp
         self.w    = w
         self.data = data
-        self.info=info
+        self.info =info
         self.info["desc"] = self.info["desc"].item()
         self.len_ = len(self.data)
     
@@ -408,6 +430,16 @@ class Predictions:
     
     @staticmethod
     def defineGP():
+        """
+        Define Gaussian Process regressor with specified kernel. We use :
+            - a long term trend kernel that contains a Dot Product with sigma_0 = 0, for the linear behaviour.
+            - an irregularities_kernel for periodic patterns CHANGER 5/45 1/len(data)?
+            - a noise_kernel
+        We also set a n_restarts_optimizer to optimize hyperparameters
+        
+        Returns:
+            GaussianProcessRegressor: The Gaussian Process regressor.
+        """
         long_term_trend_kernel =  0.1*DotProduct(sigma_0=0.0) #+ 0.5*RBF(length_scale=1/2)# +
         irregularities_kernel  = 10 * ExpSineSquared(length_scale=5/45, periodicity=5/45)#0.5**2*RationalQuadratic(length_scale=5.0, alpha=1.0) + 10 * ExpSineSquared(length_scale=5.0)
         noise_kernel           = 2*WhiteKernel(noise_level=1)#0.1**2*RBF(length_scale=0.01) + 2*WhiteKernel(noise_level=1)
@@ -416,6 +448,20 @@ class Predictions:
      
 
     def Forecast(self,train_len,steps,jobs=1):
+        """
+        Parallel forecast of time series data/eofs using an independent GP for each time series
+
+        Parameters:
+            train_len (int)      : Length of the training data.
+            steps (int)          : Number of steps to forecast.
+            jobs (int, optional) : Number of parallel jobs to run. Defaults to 1.
+
+        Returns:
+            A tuple containing:
+                - y_hats (DataFrame)     : Forecasted values.
+                - y_stds (DataFrame)     : Standard deviations of the forecasts.
+                - metrics (list of dict) : One dict of metrics by forecast
+        """
         r = Parallel(n_jobs=jobs)(delayed(self.forecast_ts)(c,train_len,steps) for c in range(1,self.data.shape[1]+1))
         y_hats = pd.DataFrame(np.array([r[i][0] for i in range(len(r))]).T, columns=self.data.columns) 
         y_stds = pd.DataFrame(np.array([r[i][1] for i in range(len(r))]).T, columns=self.data.columns) 
@@ -423,6 +469,20 @@ class Predictions:
         return y_hats, y_stds, metrics
     
     def forecast_ts(self,n,train_len,steps=0):
+        """
+        Forecast of one time series, function called in parallel in Forecast
+
+        Parameters:
+            n (int)               : Variable index.
+            train_len (int)       : Length of the training data.
+            steps (int, optional) : Number of steps to forecast. Defaults to 0.
+
+        Returns:
+            A tuple containing:
+                y_hat (array)     : Forecasted values.
+                y_hat_std (array) : Standard deviations of the forecasts.
+                metrics (dict)    : Dictionary of metrics defined in the corresponding function
+        """
         random.seed(20)
         mean,std,y_train,y_test,x_train,x_pred = self.prepare(n,train_len,steps) 
         self.gp.fit(x_train,y_train)  
@@ -434,9 +494,26 @@ class Predictions:
         return y_hat,y_hat_std,metrics
 
     def prepare(self,n,train_len,steps):
+        """
+        Prepare data for forecasting.
+
+        Parameters:
+            n (int)         : Variable index.
+            train_len (int) : Length of the training data.
+            steps (int)     : Number of steps to forecast.
+
+        Returns:
+            A tuple containing:
+                mean (float) : Mean of the training data.
+                std (float)  : Standard deviation of the training data.
+                y_train (numpy.array): Training data.
+                y_test  (numpy.array): Test data.
+                x_train (numpy.array): Training features.
+                x_pred  (numpy.array): Prediction features.
+        """
         x_train    = np.linspace(0,1,train_len).reshape(-1,1)
         pas        = x_train[1,0]-x_train[0,0]
-        x_pred = np.arange(0,(len(self)+steps)*pas,pas).reshape(-1,1)
+        x_pred     = np.arange(0,(len(self)+steps)*pas,pas).reshape(-1,1)
         y_train    = self.data[self.var+"-"+str(n)].iloc[:train_len].to_numpy()
         mean, std  = np.nanmean(y_train), np.nanstd(y_train)
         y_train    = (y_train-mean)/(2.0*std)
@@ -446,6 +523,16 @@ class Predictions:
         return mean,std,y_train,y_test,x_train,x_pred
 
     def show(self,n,y_hat,y_hat_std,train_len,color="tab:blue"):
+        """
+        Plot the forecasted time series data.
+
+        Parameters:
+            n (int)                 : Corresponding time serie/eof
+            y_hat (numpy.array)     : Forecasted values.
+            y_hat_std (numpy.array) : Standard deviations of the forecasts.
+            train_len (int)         : Length of the training data.
+            color (str, optional)   : Color for the plot. Defaults to "tab:blue".
+        """
         figure = plt.figure(figsize=(7,3))
         plt.plot(self.data[self.var+"-"+str(n)][:train_len], linestyle="dashed", color="black", alpha=0.7, label = "Train serie")
         if(train_len < len(self)):
@@ -459,6 +546,17 @@ class Predictions:
  
     @staticmethod
     def getMetrics(w,y_hat,y_test):
+        """
+        Calculate metrics for evaluating the forecast.
+
+        Parameters:
+            w (int)             : Width for moving average.
+            y_hat (numpy.array) : Forecasted values.
+            y_test(numpy.array) : True values.
+
+        Returns:
+            dict: Dictionary containing calculated metrics.
+        """
         ma_test = np.convolve(y_test/w,              np.ones(w), mode="valid")
         ma_pred = np.convolve(y_hat /w,              np.ones(w), mode="valid")
         dist    = np.convolve((y_hat-y_test)/w,      np.ones(w), mode="valid")
@@ -478,8 +576,19 @@ class Predictions:
     ###################
     #   Reconstruct   #
     ###################
-    
+
     def reconstruct(self,predictions,n,begin=0):
+        """
+        Reconstruct the time series data from predictions.
+
+        Parameters:
+            predictions (DataFrame) : Forecasted values for each component.
+            n (int)                 : Number of components to consider for reconstruction.
+            begin (int, optional)   : Starting index for reconstruction. Defaults to 0.
+
+        Returns:
+            array: Reconstructed time series data.
+        """
         rec = []
         self.int_mask = self.info["mask"].astype(np.int32).reshape(self.info["shape"])
         for t in range(begin,len(predictions)):
@@ -489,5 +598,125 @@ class Predictions:
             map_[self.int_mask==0] = np.nan
             rec.append(map_)
         return np.array(rec)*2*self.info["desc"]["std"]+self.info["desc"]["mean"]
+
+#################################
+##                             ##
+##   Forecast & reconstruct    ##
+##                             ##
+#################################
+
+#NOT UP-TO-DATE WITH PREDICTION CLASS
+  
+class optimization:
+    
+    def __init__(self,ids,ratio,ncomp,var,steps=1,min_test=50,min_train=50,kernels=None,trunc=None):
+        random.shuffle(ids)
+        i = int(len(ids) * ratio)
+        self.ids_eval  = ids[:i]
+        self.ids_test  = ids[i:]
+        self.simu_eval = [TS(id_,var) for id_ in ids[:i]]
+        self.simu_test = [TS(id_,var) for id_ in ids[i:]]
+        self.ncomp     = ncomp
+        self.var       = var
+        self.min_train = min_train
+        self.min_test  = min_test
+        self.steps     = steps
+        self.trunc     = trunc
+        self.kernels   = [RBF(), RationalQuadratic()] if kernels is None else kernels
+        self.seed      = random.randint(1, 200)
+    
+    ###___get all gp___###
+    
+    def getAllGP(self, n=4, r=RBF()):
+        kernels = self.kernelCombination(r, n)
+        listGP = []
+        for kernel in np.array(kernels).reshape(-1):
+            kernel = kernel + WhiteKernel()
+            listGP.append(GaussianProcessRegressor(kernel=kernel, normalize_y=False, n_restarts_optimizer=0))
+        self.gps = listGP
+
+    def kernelCombination(self,r=RBF(), n=4):
+        k = self.kernels
+        if n == 1:
+            return r
+        else:
+            return (self.kernelCombination(r + k[0], n=n - 1),
+                    self.kernelCombination(r * k[0], n=n - 1),
+                    self.kernelCombination(r + k[1], n=n - 1),
+                    self.kernelCombination(r * k[1], n=n - 1))
+    
+    ###___evaluate current gp___###
+    
+    def evaluateCurrentProcess(self):
+        random.seed(self.seed)
+        results_eval = []
+        print("evaluation : ")
+        for simu in self.simu_eval:
+            print(f"Processing simulation {simu.id}")
+            if self.min_train < len(simu)-self.min_test:
+                train_lens = np.arange(self.min_train,len(simu)-self.min_test,self.steps)
+                results_eval.append(simu.evaluateModel(self.ncomp,train_lens,f"{self.var}-1",jobs=15))
+                if self.trunc is None:
+                    results_eval[-1] = np.sum(result[-1])
+                else:
+                    results_eval[-1] = np.sum([min(val, self.trunc) for val in results_eval[-1]])
+        results_test = []
+        print("\ntest : ")
+        for simu in self.simu_test:
+            print(f"Processing simulation {simu.id}")
+            if self.min_train < len(simu)-self.min_test:
+                train_lens = np.arange(self.min_train,len(simu)-self.min_test,self.steps)
+                results_test.append(simu.evaluateModel(self.ncomp,train_lens,f"{self.var}-1",jobs=15))
+                if self.trunc is None:
+                    results_test[-1] = np.sum(results_test[-1])
+                else:
+                    results_test[-1] = np.sum([min(val, self.trunc) for val in results_test[-1]])
+        self.current_score_eval = np.sum(results_eval)
+        self.current_score_test = np.sum(results_test)   
+    
+    ###___evaluate gp___###
+    
+    #this methode should be changed to rmse with raw simulation
+    def evaluateProcess(self,simu,train_lens,process):
+        currentgp = simu.gp
+        simu.gp   = process
+        print("-",end="")
+        test = simu.evaluateModel(self.ncomp,train_lens,f"{self.var}-1",jobs=15)
+        simu.gp = currentgp
+        if self.trunc is None:
+            return np.sum(test)
+        else : 
+            return np.sum([min(val, self.trunc) for val in test])
+    
+    def evaluateKernels(self):
+        random.seed(self.seed)
+        results=[]
+        for simu in self.simu_eval:
+            print(f"Processing simulation {simu.id} ",end="")
+            if self.min_train < len(simu)-self.min_test:
+                train_lens = np.arange(self.min_train,len(simu)-self.min_test,self.steps)
+                results.append([self.evaluateProcess(simu,train_lens,process) for process in self.gps])
+                print("",end="\n")
+        results = [(process,score) for process,score in zip(self.gps, np.sum(results,axis=0))]
+        self.scores_eval = sorted(results, key=lambda item: item[1], reverse=True)
+        
+    ###___Select on test___###
+    
+    def testKernels(self):
+        random.seed(self.seed)
+        gps_test = [process for process,score in self.scores_eval if score > self.current_score_eval]
+        results=[]
+        for simu in self.simu_test:
+            print(f"Processing simulation {simu.id}",end="")
+            if self.min_train < len(simu)-self.min_test:
+                train_lens = np.arange(self.min_train,len(simu)-self.min_test,self.steps)
+                results.append([self.evaluateProcess(simu,train_lens,process) for process in gps_test])
+                print("",end="\n")
+        results = [(process,score) for process,score in zip(gps_test, np.sum(results,axis=0))]
+        self.scores_test = sorted(results, key=lambda item: item[1], reverse=True)
+        
+    
+    
+
    
  

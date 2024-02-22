@@ -6,8 +6,8 @@ import pickle
 import sys 
 import random 
 import argparse
-sys.path.insert(0,"/home/mtissot/SpinUp/jumper/")
-from jumper import Simulation, Predictions, load_ts
+sys.path.insert(0,"/home/mtissot/SpinUp/jumper/lib")
+from forecast import Simulation, Predictions, load_ts
 
 
 file_simu_prepared  = "/data/mtissot/simus_prepared"
@@ -63,4 +63,4 @@ if __name__ == '__main__':
 
     #update_restart_files
     
-    #python SpinUp/jumper/main.py --ye True --start 25 --end 65 --comp 0.9 --steps 30 --path /scratchu/mtissot/SIMUp6Y
+    #python SpinUp/jumper/main/main_forecast.py --ye True --start 25 --end 65 --comp 0.9 --steps 30 --path /scratchu/mtissot/SIMUp6Y
