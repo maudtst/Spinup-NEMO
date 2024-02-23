@@ -3,6 +3,41 @@ import xarray as xr
 import densite
 import matplotlib.pyplot as plt
 import copy 
+import os
+
+
+# SUPER LONG PEUT ETRE LE FAIR EN BASH OU ERREUR
+def getRestartFiles(path,term):# path = "/thredds/idris/work/ues27zx/Restarts/" term = '19141231'
+        """
+        Get the restart files of the last simulation step
+
+        Parameters:
+            path (str): The path to the restarts files  
+            term (str): year of the last simulated step
+
+        Returns:
+            list: List of restart files
+        """
+        grid = []
+        for file in os.listdir(path):
+            if term+"." in file: 
+                grid.append(path+"/"+file)
+        return grid
+
+
+def load_predictions():
+    """
+    Load predicted data from saved NumPy files.
+
+    Returns:
+        zos (numpy.array)    : ssh sea surface height predictions  - (t,y,x)
+        so (numpy.array)     : salinity predictions                - (t,z,y,x)
+        theato (numpy.array) : temperature predictions             - (t,z,y,x)
+    """
+    zos    = np.load("/data/mtissot/simus_predicted/zos.npy")       
+    so     = np.load("/data/mtissot/simus_predicted/so.npy")       
+    thetao = np.load("/data/mtissot/simus_predicted/thetao.npy")    
+    return zos[-1:], so[-1:], thetao[-1:]
 
 def getXYslice(array):
     """
@@ -79,7 +114,7 @@ def update_pred(array,zos,so,thetao):
     #return array
 
 
-def update_e3tm(mask_array,array):
+def update_e3tm(array,mask_array):
     """
     Update e3t_m : the cell thickness of the top layer.
     Get e3t : the cell thickness for all dimensions, we can use e3t to get the new bathymetry and to update u and velocities 
@@ -100,29 +135,37 @@ def update_e3tm(mask_array,array):
     bathy   = np.ma.sum(e3t_ini,axis=1)                                         # inital Bathymetry                         - (t,y,x)
     ssh     = array.variables['ssh_m']                                          # Sea Surface Height                        - (t,y,x)
     tmask   = mask_array.tmask.values[:,:,y_slice,x_slice]                      # bathy mask on grid T                      - (t,z,y,x)
-    e3t     = e3t_ini*(1+np.expand_dims(np.tile(ssh*ssmask/(bathy+(1-ssmask)),(75,1,1)),axis=0))#*tmask                     - (t,z,y,x)
+    e3t     = e3t_ini*(1+np.expand_dims(np.tile(ssh*ssmask/(bathy+(1-ssmask)),(75,1,1)),axis=0))#tmask                     - (t,z,y,x)
     e3t     = e3t #+                                        #                            - (t,z,y,x)
     #A COMMENTER 
     array['e3t_m'] = toXarray(e3t[:,0],"e3t_m",dep=False) + array.e3t_ini[:,0]*(1-ssmask)       # - (t,y,x)
     return e3t
     
 def get_deptht(array,maskarray):
+    """
+    Calculate the depth of each vertical level on grid T in the 3D grid.
+
+    Parameters:
+        array (xarray.Dataset)     : The dataset containing ocean model variables.
+        maskarray (xarray.Dataset) : The dataset containing mask variables.
+
+    Returns:
+        deptht (numpy.array) : The depth of each vertical level.
+    """
     x_slice,y_slice = getXYslice(array)
-    e3w_0 = np.array(maskarray.e3w_0)[:,:,y_slice,x_slice] 
-    e3u_0 = np.array(maskarray.e3u_0)[:,:,y_slice,x_slice] 
-    e3v_0 = np.array(maskarray.e3v_0)[:,:,y_slice,x_slice] 
-    e3t_0 = np.array(maskarray.e3t_0)[:,:,y_slice,x_slice] 
-    tmask = np.array(maskarray.tmask)[:,:,y_slice,x_slice] 
-    ssh   = array.variables['sshn']  
-    
-    ssmask  = tmask[:,0]
-    bathy   = np.ma.sum(e3t_0,axis=1)
-    depth_0 = np.zeros(np.shape(e3w_0))
+    e3w_0 = np.array(maskarray.e3w_0)[:,:,y_slice,x_slice] #initial z axis cell's thickness on grid W - (t,z,y,x)
+    e3u_0 = np.array(maskarray.e3u_0)[:,:,y_slice,x_slice] #initial z axis cell's thickness on grid U - (t,z,y,x)
+    e3v_0 = np.array(maskarray.e3v_0)[:,:,y_slice,x_slice] #initial z axis cell's thickness on grid V - (t,z,y,x)
+    e3t_0 = np.array(maskarray.e3t_0)[:,:,y_slice,x_slice] #initial z axis cell's thickness on grid T - (t,z,y,x)
+    tmask = np.array(maskarray.tmask)[:,:,y_slice,x_slice] #grid T continent mask                     - (t,z,y,x)
+    ssh   = array.variables['sshn']                        #sea surface height                        - (t,y,x)
+    ssmask  = tmask[:,0]                                   #bathymetry                                - (t,y,x)
+    bathy   = np.ma.sum(e3t_0,axis=1)                      #initial condition depth 0                 - (t,z,y,x)
+    depth_0 = np.zeros(np.shape(e3w_0))                   
     depth_0[:,0] = 0.5 * e3w_0[:,0]
     depth_0[:,1:] = depth_0[:,0] + np.cumsum(e3w_0[:,1:],axis=1)
-    #deptht_new = depth_0 * (1+ssh/(bathy + 1 - ssmask ) * tmask)
-    deptht_new = depth_0 * (np.expand_dims(1+ssh/(bathy + 1 - ssmask ),axis=0) * tmask)
-    return deptht_new
+    deptht = depth_0 * (np.expand_dims(1+ssh/(bathy + 1 - ssmask ),axis=0) * tmask) #depth of each vertical level on grid T - (t,z,y,x)
+    return deptht
     
 def update_rhop(array,maskarray,deptht):
     """
@@ -139,14 +182,27 @@ def update_rhop(array,maskarray,deptht):
     x_slice,y_slice = getXYslice(array)
     so     = array['sn'].values 
     thetao = array['tn'].values  
-    tmask  = maskarray["tmask"].values[-1:,:,y_slice,x_slice] #bathy mask on grid U                      - (z,y,x)
+    tmask  = maskarray["tmask"].values[-1:,:,y_slice,x_slice] #bathy mask on grid U          - (z,y,x)
 
-    #rhop = densite.sigma_n(thetao[-1:,:,y_slice,x_slice],so[-1:,:,y_slice,x_slice],n=0)    #- (t,z,y,x)
     rhop, rho_insitu = get_density(so,thetao,deptht,tmask)
     array['rhop']    = toXarray(rhop,"rhop")
 
 
 def get_density(thetao,so,depth,tmask):
+    """
+    Compute potential density referenced at the surface and density anomaly.
+
+    Parameters:
+        thetao (numpy.array) : Temperature array - (t,z,y,x).
+        so (numpy.array)     : Salinity array    - (t,z,y,x).
+        depth (numpy.array)  : Depth array       - (t,z,y,x).
+        tmask (numpy.array)  : Mask array        - (t,z,y,x).
+
+    Returns:
+        tuple: A tuple containing:
+            array: Potential density referenced at the surface.
+            array: Density anomaly.
+    """
     rdeltaS = 32.0
     r1_S0  = 0.875/35.16504
     r1_T0  = 1./40.
@@ -301,10 +357,10 @@ def update_v_velocity(array,maskarray,e3t_new):  #e3t_new             = maskarra
     v_new  = np.expand_dims(v_new, axis=0)
     vn_new = add_bottom_velocity(vn.values,v_new,vmask)           # add V_0        - (t,z,y,x)
     
-    #array['vn']    = toXarray(vn_new,"vn")
-    #array['vb']    = toXarray(vn_new,"vb")
-    #array['ssv_m'] = toXarray(vn_new[:,0],"vb",dep=False)
-    return v_new,vn_new
+    array['vn']    = toXarray(vn_new,"vn")
+    array['vb']    = toXarray(vn_new,"vb")
+    array['ssv_m'] = toXarray(vn_new[:,0],"vb",dep=False)
+    #return v_new,vn_new
 
 def update_u_velocity(array,maskarray,e3t_new):
     """
@@ -334,10 +390,10 @@ def update_u_velocity(array,maskarray,e3t_new):
     u_new  = np.expand_dims(u_new, axis=0)
     un_new = add_bottom_velocity(un.values,u_new,umask)                   # add U_0        - (t,z,y,x)
     
-    #array['un']    = toXarray(un_new,"un")
-    #array['ub']    = toXarray(un_new,"ub")
-    #array['ssu_m'] = toXarray(un_new[:,0],"ssu_m",dep=False)
-    return u_new,un_new
+    array['un']    = toXarray(un_new,"un")
+    array['ub']    = toXarray(un_new,"ub")
+    array['ssu_m'] = toXarray(un_new[:,0],"ssu_m",dep=False)
+    #return u_new,un_new
 
 #ERREUR MAUVAIS 
 def add_bottom_velocity(v_restart,v_update,mask):
