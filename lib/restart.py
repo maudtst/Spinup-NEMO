@@ -184,7 +184,7 @@ def update_rhop(array,maskarray,deptht):
     thetao = array['tn'].values  
     tmask  = maskarray["tmask"].values[-1:,:,y_slice,x_slice] #bathy mask on grid U          - (z,y,x)
 
-    rhop, rho_insitu = get_density(so,thetao,deptht,tmask)
+    rhop, rho_insitu = get_density(thetao,so,deptht,tmask)
     array['rhop']    = toXarray(rhop,"rhop")
 
 
