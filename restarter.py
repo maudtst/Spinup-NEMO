@@ -200,8 +200,8 @@ if __name__ == '__main__' :
     MASKdataset    = xr.open_dataset('../eORCA1.4.2_mesh_mask_modJD.nc',decode_times=False)
     Restart       = xr.open_dataset(radical+".nc",decode_times=False)
     Restart_NEW = Restart.copy()
-
-    # C : 
+    # C : In Maskdataset rename vertical axis with "nav_lev" and t in "time_counter"
+    
     x_slice,y_slice = getXYslice(Restart)
 
 
