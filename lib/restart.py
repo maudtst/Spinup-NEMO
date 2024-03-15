@@ -166,6 +166,7 @@ def get_deptht(array,maskarray):
     depth_0[:,1:] = depth_0[:,0] + np.cumsum(e3w_0[:,1:],axis=1)
     deptht = depth_0 * (np.expand_dims(1+ssh/(bathy + 1 - ssmask ),axis=0) * tmask) #depth of each vertical level on grid T - (t,z,y,x)
     return deptht
+
     
 def update_rhop(array,maskarray,deptht):
     """
@@ -356,7 +357,7 @@ def update_v_velocity(array,maskarray,e3t_new):  #e3t_new             = maskarra
     v_new  = 9.81/(rhop_new*ff_f) * np.cumsum(diff_x*e3t_new/e1t,axis=1) # v without V_0  - (t,z,y,x)
     v_new  = np.expand_dims(v_new, axis=0)
     vn_new = add_bottom_velocity(vn.values,v_new,vmask)           # add V_0        - (t,z,y,x)
-    
+
     array['vn']    = toXarray(vn_new,"vn")
     array['vb']    = toXarray(vn_new,"vb")
     array['ssv_m'] = toXarray(vn_new[:,0],"vb",dep=False)
@@ -390,6 +391,7 @@ def update_u_velocity(array,maskarray,e3t_new):
     u_new  = np.expand_dims(u_new, axis=0)
     un_new = add_bottom_velocity(un.values,u_new,umask)                   # add U_0        - (t,z,y,x)
     
+
     array['un']    = toXarray(un_new,"un")
     array['ub']    = toXarray(un_new,"ub")
     array['ssu_m'] = toXarray(un_new[:,0],"ssu_m",dep=False)
@@ -418,6 +420,3 @@ def add_bottom_velocity(v_restart,v_update,mask):
                 elif mask[k,j,i]==1 and v0!=False:                  #   If cell is not in the bottom
                     v_restart[-1,k,j,i] = v0 + v_update[-1,k,j,i]   #      cell is equal to new v cell + v0             
     return v_restart
-
-
-

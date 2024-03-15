@@ -36,6 +36,7 @@ def getXYslice(array):
 def density(thetao,so,depth,tmask):
     """
     Compute potential density referenced at the surface and in-situ density.
+    C : Add source for the formula ?
 
     Parameters:
         thetao (numpy.array) : Temperature array - (t,z,y,x).
@@ -53,7 +54,7 @@ def density(thetao,so,depth,tmask):
     r1_T0  = 1./40.
     r1_Z0  = 1.e-4
 
-
+    # C : What are thode values ?
     EOS000 = 8.0189615746e+02
     EOS100 = 8.6672408165e+02
     EOS200 = -1.7864682637e+03
@@ -126,6 +127,8 @@ def density(thetao,so,depth,tmask):
 
 
 
+# C : Why do we need to modify inplace ? Can't we just return vn_new ? 
+# C : What is the difference between vn and vb ? 
 
 def update_v_velocity(array,maskarray,e3t_new):  #e3t_new             = maskarray["e3t_0"].values[0,:,y_slice,x_slice]
     """
@@ -159,6 +162,10 @@ def update_v_velocity(array,maskarray,e3t_new):  #e3t_new             = maskarra
     array['ssv_m'] = toXarray(vn_new[:,0],"vb",dep=False)
     #return v_new,vn_new
 
+
+# C : What is "restart velocity array" ? Is it the source one ? 
+# C : v_update and v_restart should have a time dimension of 1 no ? 
+# C : In restart.py Maud have the same function with "ERROR MAUVAIS", what is the difference ?
 def add_bottom_velocity(v_restart,v_update,mask):
     """
     Add bottom velocity values to the updated velocity array.
@@ -186,26 +193,33 @@ def add_bottom_velocity(v_restart,v_update,mask):
 
 
 if __name__ == '__main__' :
+    # C : What is Radical here ? 
+    # C : Use argparse
     radical = sys.argv[1]
 
     MASKdataset    = xr.open_dataset('../eORCA1.4.2_mesh_mask_modJD.nc',decode_times=False)
     Restart       = xr.open_dataset(radical+".nc",decode_times=False)
     Restart_NEW = Restart.copy()
 
+    # C : 
     x_slice,y_slice = getXYslice(Restart)
 
-    thetao=Restart.tn
-    so=Restart.sn
-    ssh=Restart.sshn
-    un=Restart.un.copy()
-    vn=Restart.vn.copy()
-    e3t_ini=Restart.e3t_ini
 
-    ff_f=MASKdataset.ff_f
+    thetao=Restart.tn # C: Temperature 
+    so=Restart.sn # C : Salinity 
+    ssh=Restart.sshn # C : SSH
+    un=Restart.un.copy() # C : Zonal velocity (lat)
+    vn=Restart.vn.copy() # C : Meridional Velocity (lon)
+    e3t_ini=Restart.e3t_ini # C : Initial cell thickness ?
+    # Does the cell thickness vary in time in our case ? 
+    # Why don't we get e3tm here ? 
 
-    e2t=MASKdataset.e2t
-    e1t=MASKdataset.e1t
+    ff_f=MASKdataset.ff_f # C : Coriolis ? 
 
+    e2t=MASKdataset.e2t # C : Zonal cell size  ? 
+    e1t=MASKdataset.e1t # C : Meridional cell size ?
+
+    # C: Vertical cell size ? 
     e3w_0 = MASKdataset.e3w_0
     e3u_0 = MASKdataset.e3u_0
     e3v_0 = MASKdataset.e3v_0
@@ -215,6 +229,9 @@ if __name__ == '__main__' :
     umask = MASKdataset.umask
     vmask = MASKdataset.vmask
 
+
+    # C : Explain / comment this computation
+    # C : What is the difference between that and "get_deptht" in restart.py ?
     ssmask  = tmask[:,0]                                   #bathymetry                                - (t,y,x)
     bathy   = e3t_0.sum(dim="z")                      #initial condition depth 0                 - (t,z,y,x)
     depth_0 = e3w_0.copy()
@@ -223,12 +240,16 @@ if __name__ == '__main__' :
     deptht = depth_0 * (1+ssh/(bathy + 1 - ssmask )) * tmask
     rhop_new,rho_insitu_new=density(thetao,so,deptht,tmask)
 
+    #C : No Rho regularisation / checking ? 
+
+    # C : Here comment also 
     e3t_new = e3t_ini*(1+(ssh*ssmask/(bathy+1-ssmask)))
 
-    rho_insitu=rho_insitu_new.where(tmask)
+
+    rho_insitu=rho_insitu_new.where(tmask) # C : Extract density where there is water ? 
     diff_y = rhop_new.roll(y=-1) - rhop_new                #                - (t,z,y,x)
-    u_new  = 9.81/(rhop_new*ff_f) * (diff_y*e3t_new/e2t).cumsum(dim="z")
-    un_new = add_bottom_velocity(un,u_new,umask[0])
+    u_new  = 9.81/(rhop_new*ff_f) * (diff_y*e3t_new/e2t).cumsum(dim="z") # C : New speed on column ?
+    un_new = add_bottom_velocity(un,u_new,umask[0]) # C : Add speed from bottom
 
     diff_x = -rhop_new.roll(x=1) + rhop_new                #                - (t,z,y,x)
     v_new  = 9.81/(rhop_new*ff_f) * (diff_x*e3t_new/e1t).cumsum(dim="z") # v without V_0  - (t,z,y,x)
