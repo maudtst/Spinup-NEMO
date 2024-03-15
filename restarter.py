@@ -193,7 +193,7 @@ def add_bottom_velocity(v_restart,v_update,mask):
 
 
 if __name__ == '__main__' :
-    # C : What is Radical here ? 
+    # C : What is Radical here ? -> Name of the file
     # C : Use argparse
     radical = sys.argv[1]
 
@@ -211,8 +211,7 @@ if __name__ == '__main__' :
     un=Restart.un.copy() # C : Zonal velocity (lat)
     vn=Restart.vn.copy() # C : Meridional Velocity (lon)
     e3t_ini=Restart.e3t_ini # C : Initial cell thickness ?
-    # Does the cell thickness vary in time in our case ? 
-    # Why don't we get e3tm here ? 
+    # C : If e3t_ini and e3t_0 are the same, delete and use e3t_0
 
     ff_f=MASKdataset.ff_f # C : Coriolis ? 
 
@@ -230,8 +229,7 @@ if __name__ == '__main__' :
     vmask = MASKdataset.vmask
 
 
-    # C : Explain / comment this computation
-    # C : What is the difference between that and "get_deptht" in restart.py ?
+    # Same as get_depth in restart.py
     ssmask  = tmask[:,0]                                   #bathymetry                                - (t,y,x)
     bathy   = e3t_0.sum(dim="z")                      #initial condition depth 0                 - (t,z,y,x)
     depth_0 = e3w_0.copy()
@@ -242,14 +240,14 @@ if __name__ == '__main__' :
 
     #C : No Rho regularisation / checking ? 
 
-    # C : Here comment also 
+    # C : Here comment also (update_e3tm in restart.py)
     e3t_new = e3t_ini*(1+(ssh*ssmask/(bathy+1-ssmask)))
 
 
-    rho_insitu=rho_insitu_new.where(tmask) # C : Extract density where there is water ? 
+    rho_insitu=rho_insitu_new.where(tmask) 
     diff_y = rhop_new.roll(y=-1) - rhop_new                #                - (t,z,y,x)
-    u_new  = 9.81/(rhop_new*ff_f) * (diff_y*e3t_new/e2t).cumsum(dim="z") # C : New speed on column ?
-    un_new = add_bottom_velocity(un,u_new,umask[0]) # C : Add speed from bottom
+    u_new  = 9.81/(rhop_new*ff_f) * (diff_y*e3t_new/e2t).cumsum(dim="z")
+    un_new = add_bottom_velocity(un,u_new,umask[0]) 
 
     diff_x = -rhop_new.roll(x=1) + rhop_new                #                - (t,z,y,x)
     v_new  = 9.81/(rhop_new*ff_f) * (diff_x*e3t_new/e1t).cumsum(dim="z") # v without V_0  - (t,z,y,x)
@@ -260,5 +258,14 @@ if __name__ == '__main__' :
     Restart_NEW["rhop"]=rhop_new
     Restart_NEW["ub"]=un_new
     Restart_NEW["vb"]=vn_new
+
+    # C : To Add e3tm, ssu_m, ssv_m
+
+
+    # Not modified yet ( no forecast ) but for later
+    Restart_NEW["tn"] = thetao
+    Restart_NEW["sn"] = so
+    Restart_NEW["sshn"] = ssh
+
 
     Restart_NEW.to_netcdf(radical+"_NEW.nc")
