@@ -228,26 +228,25 @@ if __name__ == '__main__' :
     vn_new = add_bottom_velocity(vn,v_new,vmask[0]) 
 
 # Modifying the Global Restart file and recording it for analysis
-    x_slice,y_slice = getXYslice(Restart)
-    Restart["un"]=un_new[:,:,y_slice,x_slice]
-    Restart["vn"]=vn_new[:,:,y_slice,x_slice]
-    Restart["ub"]=un_new[:,:,y_slice,x_slice]
-    Restart["vb"]=vn_new[:,:,y_slice,x_slice]
-    Restart["sn"]=so[:,:,y_slice,x_slice]
-    Restart["tn"]=thetao[:,:,y_slice,x_slice]
-    Restart["sb"]=so[:,:,y_slice,x_slice]
-    Restart["tb"]=thetao[:,:,y_slice,x_slice]
-    Restart["sshn"]=ssh[:,:,y_slice,x_slice]
-    Restart["sshb"]=ssh[:,:,y_slice,x_slice]
+    Restart["un"]=un_new[:,:]
+    Restart["vn"]=vn_new[:,:]
+    Restart["ub"]=un_new[:,:]
+    Restart["vb"]=vn_new[:,:]
+    Restart["sn"]=so[:,:]
+    Restart["tn"]=thetao[:,:]
+    Restart["sb"]=so[:,:]
+    Restart["tb"]=thetao[:,:]
+    Restart["sshn"]=ssh[:,:]
+    Restart["sshb"]=ssh[:,:]
 
-    Restart["rhop"]=rhop_new[:,:,y_slice,x_slice]
+    Restart["rhop"]=rhop_new[:,:]
 
-    Restart["ssv_m"]=vn_new[:,0,y_slice,x_slice]
-    Restart["ssu_m"]=un_new[:,0,y_slice,x_slice]
-    Restart["sst_m"]=thetao[:,0,y_slice,x_slice]
-    Restart["sss_m"]=so[:,0,y_slice,x_slice]
-    Restart["ssh_m"]=ssh[:,y_slice,x_slice]
-    Restart["e3t_m"]=e3t_new[:,0,y_slice,x_slice]
+    Restart["ssv_m"]=vn_new[:,0]
+    Restart["ssu_m"]=un_new[:,0]
+    Restart["sst_m"]=thetao[:,0]
+    Restart["sss_m"]=so[:,0]
+    Restart["ssh_m"]=ssh[:]
+    Restart["e3t_m"]=e3t_new[:,0]
 
 
     Restart.to_netcdf(radical+"_NEW.nc")
