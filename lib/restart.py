@@ -53,7 +53,7 @@ def recordFullRestart(path,radical,restart):
         Parameters:
             path (str): The path to the restart file directory 
             radical (str): Radical of the original restart file name 
-                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231")
+                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
             restart (xarray.Dataset): The full restart file we are modifying.
 
         Returns:
@@ -72,7 +72,7 @@ def recordPiecedRestart(path,radical,restart):
         Parameters:
             path (str): The path to the restart file directory 
             radical (str): Radical of the original restart file name 
-                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231")
+                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
             restart (xarray.Dataset): The full restart file we are modifying.
 
         Returns:
@@ -220,17 +220,16 @@ def propagate_pred(restart,mask):
     u_new = update_u_velocity(restart,mask,e3t_new).fillna(0)
     v_new = update_v_velocity(restart,mask,e3t_new).fillna(0)
 
-# Modifying the Global Restart file and recording it for analysis
-    Restart["un"]=u_new.copy()
-    Restart["vn"]=v_new.copy()
-    Restart["ub"]=u_new.copy()
-    Restart["vb"]=v_new.copy()
-    Restart["rhop"]=rhop_new.fillna(0)
-    Restart["ssv_m"]=v_new.isel(nav_lev=0)
-    Restart["ssu_m"]=u_new.isel(nav_lev=0)
-    Restart["e3t_m"]=e3t_new.isel(nav_lev=0).fillna(0)
+    restart["un"]=u_new.copy()
+    restart["vn"]=v_new.copy()
+    restart["ub"]=u_new.copy()
+    restart["vb"]=v_new.copy()
+    restart["rhop"]=rhop_new.fillna(0)
+    restart["ssv_m"]=v_new.isel(nav_lev=0)
+    restart["ssu_m"]=u_new.isel(nav_lev=0)
+    restart["e3t_m"]=e3t_new.isel(nav_lev=0).fillna(0)
 
-
+    return restart
 
 
 
