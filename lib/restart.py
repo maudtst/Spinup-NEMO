@@ -7,77 +7,79 @@ import os
 import glob
 
 # SUPER LONG PEUT ETRE LE FAIR EN BASH OU ERREUR
-def getRestartFiles(path,radical,puzzled=False):# path = "/thredds/idris/work/ues27zx/Restarts/" term = '19141231'
-        """
-        Get the restart files of the last simulation step
+def getRestartFiles(path,radical,puzzled=False):
+    """
+    Get the restart files of the last simulation step
 
-        Parameters:
-            path (str): The path to the restarts files  
-            radical (str): Radical of the file name 
-                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231")
-            puzzled (bool): Return Complete Restart File (False) or List of windowed files (True)
+    Parameters:
+        path (str): The path to the restarts files  
+        radical (str): Radical of the file name 
+                       (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231")
+        puzzled (bool): Return Complete Restart File (False) or List of windowed files (True)
 
-        Returns:
-            list (of str) or str : List of restart puzzled files paths, or unique restart file path
-        """
-        if puzzled:
-            return glob.glob(path+radical+"_*.nc").sorted()
-        else:
-            try:
-                return glob.glob(path+radical+".nc")[0]
-            except IndexError:
-                print("No Full Restart Found : Use NEMO_REBUILD from NEMO tools if you didn’t do it yet.")
-                break
+    Returns:
+        list (of str) or str : List of restart puzzled files paths, or unique restart file path
+    """
+    print("Retrieving Restart File(s)")
+    if puzzled==True:
+        return glob.glob(path+radical+"_*.nc").sorted()
+    else:
+        try:
+            return glob.glob(path+radical+".nc")[0]
+        except IndexError:
+            print("No Full Restart Found : Use NEMO_REBUILD from NEMO tools if you didn’t do it yet.")
+            raise
+
 
 def getMaskFile(maskpath,restart):
-        """
-        Get the mask file and adapt it to fit the restart file coordinate system.
+    """
+    Get the mask file and adapt it to fit the restart file coordinate system.
 
-        Parameters:
-            maskpath (str): The path to the mask file, name of the file included.
-            restart (xarray.Dataset): The full restart file we are modifying.
+    Parameters:
+        maskpath (str): The path to the mask file, name of the file included.
+        restart (xarray.Dataset): The full restart file we are modifying.
 
-        Returns:
-            mask (xarray.Dataset) : The mask dataset adapted to the restart file.
-        """
-    mask    = xr.open_dataset(maskpath,decode_times=False)
+    Returns:
+        mask (xarray.Dataset) : The mask dataset adapted to the restart file.
+    """
+    mask = xr.open_dataset(maskpath,decode_times=False)
     # Harmonizing the structure of mask with that of restart
     mask = mask.swap_dims(dims_dict={"z": "nav_lev","t":"time_counter"})
     mask["time_counter"]=restart["time_counter"]
     return mask
 
 def recordFullRestart(path,radical,restart):
-        """
-        Record the Modified Full Restart Dataset to a file in the input directory for analysis.
+    """
+    Record the Modified Full Restart Dataset to a file in the input directory for analysis.
 
-        Parameters:
-            path (str): The path to the restart file directory 
-            radical (str): Radical of the original restart file name 
-                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
-            restart (xarray.Dataset): The full restart file we are modifying.
+    Parameters:
+        path (str): The path to the restart file directory 
+        radical (str): Radical of the original restart file name 
+                       (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
+        restart (xarray.Dataset): The full restart file we are modifying.
 
-        Returns:
-            str : Recording Completion Message
-        """
-    restart.to_netcdf(path+"NEW_"radical+".nc")
-    print("Restart saved as : "+ path+"NEW_"radical+".nc")
+    Returns:
+        str : Recording Completion Message
+    """
+    restart.to_netcdf(path+"NEW_"+radical+".nc")
+    print("Restart saved as : "+ path+"NEW_"+radical+".nc")
     return "Recording Complete"
 
 def recordPiecedRestart(path,radical,restart):
-        """
-        Record the Modified Puzzled Restart Datasets to files in the input directory for analysis.
-        It is done by iterating on the existing puzzled dataset files, and creating new ones by appending "NEW_" in front of the filename.
-        If the user want to overwrite the old files, they will need to do it manually (a 4 line bash script is available).
+    """
+    Record the Modified Puzzled Restart Datasets to files in the input directory for analysis.
+    It is done by iterating on the existing puzzled dataset files, and creating new ones by appending "NEW_" in front of the filename.
+    If the user want to overwrite the old files, they will need to do it manually (a 4 line bash script is available).
 
-        Parameters:
-            path (str): The path to the restart file directory 
-            radical (str): Radical of the original restart file name 
-                           (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
-            restart (xarray.Dataset): The full restart file we are modifying.
+    Parameters:
+        path (str): The path to the restart file directory 
+        radical (str): Radical of the original restart file name 
+                       (e.g. for "OCE_CM65-LR-pi-SpinupRef_19141231_restart_00390.nc", it’s "OCE_CM65-LR-pi-SpinupRef_19141231_restart")
+        restart (xarray.Dataset): The full restart file we are modifying.
 
-        Returns:
-            str : Recording Completion Message
-        """
+    Returns:
+        str : Recording Completion Message
+    """
     size=len(glob.glob(path+radical+"_*.nc"))
     for index in range(size):
         Restart_NEW=xr.open_dataset(path+radical+"_%04d.nc"%(index))
@@ -95,7 +97,7 @@ def recordPiecedRestart(path,radical,restart):
 
         Restart_NEW["sshn"]=restart["sshn"][:,y_slice,x_slice]
         Restart_NEW["sshb"]=restart["sshb"][:,y_slice,x_slice]
-        
+
         Restart_NEW["ssv_m"]=restart["ssv_m"][:,y_slice,x_slice]
         Restart_NEW["ssu_m"]=restart["ssu_m"][:,y_slice,x_slice]
         Restart_NEW["sst_m"]=restart["sst_m"][:,y_slice,x_slice]
@@ -103,8 +105,8 @@ def recordPiecedRestart(path,radical,restart):
         Restart_NEW["ssh_m"]=restart["ssh_m"][:,y_slice,x_slice]
         Restart_NEW["e3t_m"]=restart["e3t_m"][:,y_slice,x_slice]
 
-        Restart_NEW.to_netcdf(path+"NEW_"+radical+"_%04d.nc"%(i))
-        print("Restart Piece saved as : "+ path+"NEW_"radical+"_%04d.nc"%(i))
+        Restart_NEW.to_netcdf(path+"NEW_"+radical+"_%04d.nc"%(index))
+        print("Restart Piece saved as : "+ path+"NEW_"+radical+"_%04d.nc"%(index))
     return "Recording Complete"
 
 def load_predictions(restart,dirpath="/data/mtissot/simus_predicted"):
@@ -123,33 +125,34 @@ def load_predictions(restart,dirpath="/data/mtissot/simus_predicted"):
     ## (loading zos.npy, selecting last snapshot, then converting to fitting xarray.DataArray, and cleaning the nans) 
     try:
         zos=np.load(dirpath+"/zos.npy")[-1:]
-        restart["sshn"] = xr.DataArray(zos, dims=("time_counter", "y", "x"), name="sshn").fillna(0)  
+        restart["sshn"] = xr.DataArray(zos, dims=("time_counter", "y", "x"), name="sshn").fillna(0)
         restart["sshb"] = restart["sshn"].copy()
         restart["ssh_m"] = restart["sshn"].copy()
     except FileNotFoundError:
         print("Couldn’t find a SSH/ZOS prediction file, keeping the original SSH.")
-        
+
     ## Loading new SO in directly affected variables 
     ## (loading so.npy, selecting last snapshot, then converting to fitting xarray.DataArray, and cleaning the nans) 
     try:
-        so = np.load(dirpath+"/so.npy")[-1:] 
-        restart["sn"] = xr.DataArray(so, dims=("time_counter", "nav_lev","y", "x"), name="sn").fillna(0)  
+        so = np.load(dirpath+"/so.npy")[-1:]
+        restart["sn"] = xr.DataArray(so, dims=("time_counter", "nav_lev","y", "x"), name="sn").fillna(0)
         restart["sb"] = restart["sn"].copy()
         restart["sss_m"] = restart["sn"].isel(nav_lev=0).copy()
     except FileNotFoundError:
         print("Couldn’t find a SO prediction file, keeping the original SO.")
-        
+
     ## Loading new THETAO in directly affected variables 
     ## (loading thetao.npy, selecting last snapshot, then converting to fitting xarray.DataArray, and cleaning the nans) 
     try:
         thetao=np.load(dirpath+"/thetao.npy")[-1:]
-        restart["tn"] = xr.DataArray(thetao, dims=("time_counter", "nav_lev","y", "x"), name="tn").fillna(0)  
+        restart["tn"] = xr.DataArray(thetao, dims=("time_counter", "nav_lev","y", "x"), name="tn").fillna(0)
         restart["tb"] = restart["tn"].copy()
         restart["sst_m"] = restart["tn"].isel(nav_lev=0).copy()
     except FileNotFoundError:
         print("Couldn’t find a THETAO prediction file, keeping the original THETAO.")
 
     return restart
+
 
 def getXYslice(restart):
     """
@@ -208,12 +211,11 @@ def propagate_pred(restart,mask):
     Returns:
         restart (xarray.Dataset) : Full Restart file with all variables modified according to the predictions.
     """
-    
-    ssh=restart.ssh
-    thetao=restart.thetao
-    so=restart.so
 
-    deptht = get_deptht(ssh,mask)
+    thetao=restart.tn
+    so=restart.sn
+
+    deptht = get_deptht(restart,mask)
     rhop_new,_= get_density(thetao,so,deptht,mask.tmask)
 
     e3t_new = update_e3t(restart,mask)
@@ -230,6 +232,7 @@ def propagate_pred(restart,mask):
     restart["e3t_m"]=e3t_new.isel(nav_lev=0).fillna(0)
 
     return restart
+
 
 
 
@@ -258,6 +261,7 @@ def update_e3t(restart,mask):
 
 
 
+
 def get_deptht(restart,mask):
     """
     Calculate the depth of each vertical level on grid T in the 3D grid.
@@ -276,10 +280,12 @@ def get_deptht(restart,mask):
     ssmask  = tmask[:,0]                                   #bathymetry                                - (t,y,x)
     bathy   = e3t_0.sum(dim="nav_lev")                      #initial condition depth 0                 - (t,z,y,x)
     depth_0 = e3w_0.copy()
-    depth_0[:,0] = 0.5 * e3w_0[:,0]                  
+    depth_0[:,0] = 0.5 * e3w_0[:,0]
     depth_0[:,1:] = depth_0[:,0:1].data + e3w_0[:,1:].cumsum(dim="nav_lev")
     deptht = depth_0 * (1+ssh/(bathy + 1 - ssmask )) * tmask
-return deptht
+    return deptht
+
+
 
     
 def update_rhop(restart,mask):
@@ -461,59 +467,60 @@ def update_u_velocity(restart,mask,e3t_new):  #e3t_new             = maskarray["
         None
     """
     un              = restart.un.copy() #initial v velocity of the restart         - (t,z,y,x)
-    thetao          = restart.thetao
-    so              = restart.so
+    thetao          = restart.tn
+    so              = restart.sn
     deptht          = get_deptht(restart,mask)
     e2t             = mask.e2t     #initial y axis cell's thickness on grid T - (y,x)
     ff_f            = mask.ff_f    #corriolis force                           - (y,x)
     tmask           = mask.tmask
     umask           = mask.umask
     vmask           = mask.vmask
-        
-    _,rho_insitu = get_density(thetao,so,deptht,tmask) 
+
+    _,rho_insitu = get_density(thetao,so,deptht,tmask)
     rho_insitu  = rho_insitu.where(tmask)   #updated density                           - (t,z,y,x)
-        
+
     ind_prof_u=(umask.argmin(dim="nav_lev")-1)*umask.isel(nav_lev=0)
 
     diff_y = rho_insitu.roll(y=-1) - rho_insitu                #                - (t,z,y,x)
     u_new  = 9.81/ff_f * (diff_y/rho_insitu*e3t_new/e2t).cumsum(dim="nav_lev")
     u_new = u_new - u_new.isel(nav_lev=ind_prof_u)
     un_new = add_bottom_velocity(un,u_new,umask[0])          # add V_0        - (t,z,y,x)
- 
+
     return un_new
 
-def update_v_velocity(array,mask,e3t_new):  #e3t_new             = maskarray["e3t_0"].values[0,:,y_slice,x_slice]
+def update_v_velocity(restart,mask,e3t_new):  #e3t_new             = maskarray["e3t_0"].values[0,:,y_slice,x_slice]
     """
     Update the v-component velocity array.Meridional
 
     Parameters:
-        array (xarray.Dataset)     : Restart file.
-        maskarray (xarray.Dataset) : Mask dataset.
+        restart (xarray.Dataset)     : Restart file.
+        mask (xarray.Dataset) : Mask dataset.
         e3t_new (numpy.ndarray)    : Updated array of z-axis cell thicknesses.
 
     Returns:
         New v_velocity
     """
     vn              = restart.vn.copy() #initial v velocity of the restart         - (t,z,y,x)
-    thetao          = restart.thetao
-    so              = restart.so
+    thetao          = restart.tn
+    so              = restart.sn
     deptht          = get_deptht(restart,mask)
     e1t             = mask.e1t     #initial y axis cell's thickness on grid T - (y,x)
     ff_f            = mask.ff_f    #corriolis force                           - (y,x)
     tmask           = mask.tmask
     vmask           = mask.vmask
-        
-    _,rho_insitu = get_density(thetao,so,deptht,tmask) 
+
+    _,rho_insitu = get_density(thetao,so,deptht,tmask)
     rho_insitu  = rho_insitu.where(tmask)   #updated density                           - (t,z,y,x)
-        
+
     ind_prof_v=(vmask.argmin(dim="nav_lev")-1)*vmask.isel(nav_lev=0)
 
     diff_x = -rho_insitu.roll(x=1) + rho_insitu                #                - (t,z,y,x)
     v_new  = 9.81/ff_f * (diff_x/rho_insitu*e3t_new/e1t).cumsum(dim="nav_lev") # v without V_0  - (t,z,y,x) C: On intègre vers le fond puis on retire la valeur au fond sur toute la colonne pour avoir v_fond=vo
     v_new = v_new - v_new.isel(nav_lev=ind_prof_v)
     vn_new = add_bottom_velocity(vn,v_new,vmask[0])
-        
+
     return vn_new
+
 
 
 
@@ -534,3 +541,4 @@ def add_bottom_velocity(v_restart,v_update,mask):
     mask_nan_update = np.isnan(v_update)
     v_new  = mask_nan_update * v_restart + (1-mask_nan_update) * (v_fond + v_update)
     return v_restart
+                       
