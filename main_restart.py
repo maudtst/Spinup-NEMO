@@ -56,21 +56,22 @@ def update_Restarts(restarts_file,mask_file,jobs=10) :
 
 
 if __name__ == '__main__':
-                                                         
+ 
     parser = argparse.ArgumentParser(description="Update of restart files")
     parser.add_argument("--restart_path",  type=str,   help= "path of restart file directory")
-    parser.add_argument("--radical",  type=str,   help= "radical of restart filename")    
-    parser.add_argument("--mask_file",      type=str,   help= "adress of mask file")     
+    parser.add_argument("--radical",  type=str,   help= "radical of restart filename")
+    parser.add_argument("--mask_file",      type=str,   help= "adress of mask file")
     parser.add_argument("--prediction_path",  type=str,   help= "path of prediction directory")
     args = parser.parse_args()
 
     restart=xr.open_dataset(getRestartFiles(args.restart_path,args.radical),decode_times=False)
-    mask=getMask(args.mask_file,restart)
-    restart=load_predictions(restart,dirpath=args.pred_dir)
+    mask=getMaskFile(args.mask_file,restart)
+    restart=load_predictions(restart,dirpath=args.prediction_path)
     restart=propagate_pred(restart,mask)
     recordFullRestart(args.restart_path,args.radical,restart)
     recordPiecedRestart(args.restart_path,args.radical,restart)
-    
+
+ 
     print("""All done. Now you just need to : 
                 - Back transform the coordinates of the pieced restart files using ncks to the original version (see bash script xarray_to_CMIP.sh)
                 - Rename/Overwrite the "NEW_" restart files to their old version if you’re happy with them (see other bash script rewrite.sh)
