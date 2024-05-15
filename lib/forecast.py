@@ -123,7 +123,7 @@ class Simulation:
         Get attributes of the simulation data.
         """
         array = xr.open_dataset(self.files[-1], decode_times=False,chunks={"time": 200, "x":120})
-        self.time_dim  = list(array.dims)[3]
+        self.time_dim  = list(array.dims)[0]
         self.y_size    = array.sizes['y']
         self.x_size    = array.sizes['x']
         if "deptht" in array[self.term].dims:
@@ -148,6 +148,7 @@ class Simulation:
         array = xr.concat(array, self.time_dim)
         self.desc = {"mean":np.nanmean(array),"std":np.nanstd(array),"min":np.nanmin(array),"max":np.nanmax(array)} 
         self.simulation = array
+        del array
        
     def loadFile(self,file):
         """
@@ -162,13 +163,15 @@ class Simulation:
         """
         array = xr.open_dataset(file, decode_times=False,chunks={"time": 200, "x":120})
         array = array[self.term]
+        self.len = self.len + array.sizes[self.time_dim]
+        print(self.len)
         #if self.ye:
         #    #array = array.coarsen({self.time_dim: 12}).mean()   #TO CHANGE WITH TIME DIM
-        if self.len + array.sizes[self.time_dim] > self.end:
-            array = array[0:self.end-self.len]
-            self.len = self.len + array.sizes[self.time_dim]
-        else:
-            self.len = self.len + array.sizes[self.time_dim]
+        #if self.len + array.sizes[self.time_dim] > self.end:
+        #    array = array[0:self.end-self.len]
+        #    self.len = self.len + array.sizes[self.time_dim]
+        #else:
+        #    self.len = self.len + array.sizes[self.time_dim]
         return array.load()
     
 
@@ -195,7 +198,7 @@ class Simulation:
         if stand:
             self.standardize() 
         self.simulation = self.simulation.values
-        
+
     def getSSCA(self,array):
         """
         Extract the seasonality data from the simulation. Not used : we import yearly data
