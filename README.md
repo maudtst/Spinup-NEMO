@@ -54,6 +54,8 @@ The objective is to update the last restart file to initialize the jump. For thi
 - ff_f  : corriolis force 
 
 ### 3 - Necessary features to update restart
+This is the list of features from the source restart file we need to exploit to update restart. 
+
 - e3t : e3t_ini*(1+tmask4D*np.expand_dims(np.tile(ssh*ssmask/(bathy+(1-ssmask)),(75,1,1)),axis=0))
 - deptht : depth of the z axis - grid T
 - bathy  : np.ma.sum(e3t,axis=1)
@@ -63,7 +65,8 @@ The objective is to update the last restart file to initialize the jump. For thi
   
 There is a total of 340 restart file per year. Each file contains a slice of x and y dimensions. Each files contains 58 data variables which 15 are updates using the predictions  
   
-difference of now (n) and before (b): les même états : Le restart n'a besoin que d'une image - flou euler forward (t->t+1) diff simu en cours plusieurs pas de temps***
+
+**NB** : difference between now (n) and before (b) arrays : they represent the same states, in practice the restart file save two successive states. In our code we set the two to the same state to use euler forward for the restart. 
 
 - ssh(n/b) :  sea surface height       => last prediction of zos
 - s(n/b)   :  sea salinity             => last prediction of so
