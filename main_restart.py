@@ -6,8 +6,8 @@ import pickle
 import sys 
 import random 
 import argparse
-sys.path.insert(0,"/home/mtissot/SpinUp/jumper/lib")
-import restart
+sys.path.insert(0,"/home/mtissot/Spinup-NEMO/lib")
+from lib.restart import *
 import xarray as xr
 
 def update_restart_slice(restart_file,restart_name,mask_file):
@@ -33,7 +33,7 @@ def update_restart_slice(restart_file,restart_name,mask_file):
     restart.update_v_velocity(restart_array,mask_array,e3t_new[0])                 #update meridional velocity
     restart.update_u_velocity(restart_array,mask_array,e3t_new[0])                 #update zonal velocity
     array = array.rename_vars({'xx': 'x','yy':'y'})                                #inverse transformation of x and y vars
-    Restart.to_netcdf(restarts_file+restart_name)                                  # save file
+    #Restart.to_netcdf(restart_file+restart_name)                                  # save file
 
 
 #PAs EU LE TEMPS D'ESSAYER 
