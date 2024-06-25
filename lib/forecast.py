@@ -164,7 +164,7 @@ class Simulation:
         array = xr.open_dataset(file, decode_times=False,chunks={"time": 200, "x":120})
         array = array[self.term]
         self.len = self.len + array.sizes[self.time_dim]
-        print(self.len)
+        #print(self.len)
         #if self.ye:
         #    #array = array.coarsen({self.time_dim: 12}).mean()   #TO CHANGE WITH TIME DIM
         #if self.len + array.sizes[self.time_dim] > self.end:
@@ -269,24 +269,31 @@ class Simulation:
 
 
     ############################### NOT USED IN THE MAIN.PY ############################### 
-    
     def rmseOfPCA(self,n):
-        """
-        Calculate Root Mean Square Error (RMSE) for PCA reconstruction.
-
-        Parameters:
-            n (int): The number of components used for reconstruction.
-
-        Returns:
-            A tuple containing:
-                - reconstruction (numpy.array) : The reconstructed data.
-                - rmse_values (numpy.array)    : RMSE for each time step.
-                - rmse_map (numpy.array)       : time average RMSE of the PCA 
-        """
         reconstruction = self.reconstruct(n)
-        rmse_values    = self.rmseValues(reconstruction)*2*self.desc["std"]
-        rmse_map       = self.rmseMap(reconstruction)   *2*self.desc["std"]
+        rmse_values    = self.rmseValues(reconstruction) * 2 * self.desc["std"]
+        rmse_map       = self.rmseMap(reconstruction) * 2 * self.desc["std"]
         return reconstruction, rmse_values, rmse_map
+    
+    def rmseValues(self,reconstruction):
+        truth = self.simulation# * 2 * self.desc["std"] + self.desc["mean"]
+        rec   = reconstruction # * 2 * self.desc["std"] + self.desc["mean"]
+        if len(np.shape(truth))==3:
+            n = np.count_nonzero(~np.isnan(truth[0]))
+            rmse_values = np.sqrt(np.nansum((truth-rec)**2,axis=(1,2))/n)
+        else:
+            n = np.count_nonzero(~np.isnan(self.simulation[0]),axis=(1,2))
+            rmse_values = np.nansum((truth-rec)**2,axis=(2,3))
+            for i in range(len(n)):
+                rmse_values[:,i] = rmse_values[:,i]/n[i]
+            rmse_values = np.sqrt(rmse_values)
+        return rmse_values 
+        
+    def rmseMap(self,reconstruction):
+        t = self.len
+        truth = self.simulation
+        reconstruction = reconstruction 
+        return np.sqrt(np.sum((self.simulation[:]-reconstruction)**2,axis=0)/t)
     
     def reconstruct(self, n):
         """
@@ -308,8 +315,27 @@ class Simulation:
             map_[self.int_mask==0] = np.nan
             rec.append(map_)
         return np.array(rec)
+
+    def rmseOfPCA2(self,n):
+        """
+        Calculate Root Mean Square Error (RMSE) for PCA reconstruction.
+
+        Parameters:
+            n (int): The number of components used for reconstruction.
+
+        Returns:
+            A tuple containing:
+                - reconstruction (numpy.array) : The reconstructed data.
+                - rmse_values (numpy.array)    : RMSE for each time step.
+                - rmse_map (numpy.array)       : time average RMSE of the PCA 
+        """
+        reconstruction = self.reconstruct(n)
+        rmse_values    = self.rmseValues(reconstruction)*2*self.desc["std"]
+        rmse_map       = self.rmseMap(reconstruction)   *2*self.desc["std"]
+        return reconstruction, rmse_values, rmse_map
     
-    def rmseValues(self,reconstruction):
+    
+    def rmseValues2(self,reconstruction):
         """
         Calculate RMSE values.
 
@@ -322,7 +348,7 @@ class Simulation:
         n = np.product(self.shape) - self.nbNan()
         return  np.sqrt(np.nansum(np.nansum((self.simulation[:]-reconstruction)**2,axis=-1),axis=-1)/n)
     
-    def rmseMap(self,reconstruction):
+    def rmseMap2(self,reconstruction):
         """
         Calculate RMSE map.
 
@@ -335,7 +361,7 @@ class Simulation:
         t = self.len
         return np.sqrt(np.sum((self.simulation[:]-reconstruction)**2,axis=0)/t)
     
-    def nbNan(self):
+    def nbNan2(self):
         """
         Count the number of NaN values in the data.
 
