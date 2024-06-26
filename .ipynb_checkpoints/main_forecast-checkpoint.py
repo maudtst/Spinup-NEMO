@@ -1,17 +1,16 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import pickle
 import sys 
 import random 
 import argparse
-sys.path.insert(0,"/home/mtissot/SpinUp/jumper/lib")
-from forecast import Simulation, Predictions, load_ts
+sys.path.insert(0,"../lib/")
+from forecast import Predictions, Simulation, load_ts
 
 
-file_simu_prepared  = "/data/mtissot/simus_prepared"
-file_simu_predicted = "/data/mtissot/simus_predicted"
+file_simu_prepared  = "/data/mtissot/spinup_data/simus_prepared"
+file_simu_predicted = "/data/mtissot/spinup_data/simus_predicted"
 
 
 def prepare(term,simu_path, start, end, ye, comp):

@@ -316,60 +316,6 @@ class Simulation:
             rec.append(map_)
         return np.array(rec)
 
-    def rmseOfPCA2(self,n):
-        """
-        Calculate Root Mean Square Error (RMSE) for PCA reconstruction.
-
-        Parameters:
-            n (int): The number of components used for reconstruction.
-
-        Returns:
-            A tuple containing:
-                - reconstruction (numpy.array) : The reconstructed data.
-                - rmse_values (numpy.array)    : RMSE for each time step.
-                - rmse_map (numpy.array)       : time average RMSE of the PCA 
-        """
-        reconstruction = self.reconstruct(n)
-        rmse_values    = self.rmseValues(reconstruction)*2*self.desc["std"]
-        rmse_map       = self.rmseMap(reconstruction)   *2*self.desc["std"]
-        return reconstruction, rmse_values, rmse_map
-    
-    
-    def rmseValues2(self,reconstruction):
-        """
-        Calculate RMSE values.
-
-        Parameters:
-            reconstruction (numpy.ndarray): The reconstructed data.
-
-        Returns:
-            (numpy.ndarray) : RMSE values.
-        """
-        n = np.product(self.shape) - self.nbNan()
-        return  np.sqrt(np.nansum(np.nansum((self.simulation[:]-reconstruction)**2,axis=-1),axis=-1)/n)
-    
-    def rmseMap2(self,reconstruction):
-        """
-        Calculate RMSE map.
-
-        Parameters:
-            reconstruction (numpy.ndarray): The reconstructed data.
-
-        Returns:
-            (numpy.ndarray) : RMSE map.
-        """
-        t = self.len
-        return np.sqrt(np.sum((self.simulation[:]-reconstruction)**2,axis=0)/t)
-    
-    def nbNan2(self):
-        """
-        Count the number of NaN values in the data.
-
-        Returns:
-            (int) : Number of NaN values.
-        """
-        return np.sum(self.int_mask==False)
-
     #######################################################################################################
 
     ##################
